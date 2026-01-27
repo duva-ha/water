@@ -1,15 +1,124 @@
-
 <!DOCTYPE html>
 <html lang="vi">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Giviso Water - Quản lý giao hàng</title>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Giviso Water - Demo Giao Hàng</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-  </head>
-  <body>
+    
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, updateDoc, serverTimestamp, query, orderBy } 
+        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // --- DÁN FIREBASE CONFIG CỦA BẠN VÀO ĐÂY ---
+        const firebaseConfig = {
+            apiKey: "AIza...",
+            authDomain: "your-app.firebaseapp.com",
+            projectId: "your-app",
+            storageBucket: "your-app.appspot.com",
+            messagingSenderId: "...",
+            appId: "..."
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window.db = db; // Đưa ra window để React dùng được
+        window.fs = { collection, onSnapshot, doc, updateDoc, serverTimestamp, query, orderBy };
+    </script>
+</head>
+<body class="bg-slate-50 font-sans">
     <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const App = () => {
+            const [deliveries, setDeliveries] = useState([]);
+            const [loading, setLoading] = useState(true);
+
+            useEffect(() => {
+                const { collection, onSnapshot, query, orderBy } = window.fs;
+                const q = query(collection(window.db, "deliveries"), orderBy("timestamp", "desc"));
+                
+                const unsubscribe = onSnapshot(q, (snapshot) => {
+                    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                    setDeliveries(docs);
+                    setLoading(false);
+                });
+                return () => unsubscribe();
+            }, []);
+
+            const handleComplete = async (id, currentShells) => {
+                const { doc, updateDoc, serverTimestamp } = window.fs;
+                try {
+                    const docRef = doc(window.db, "deliveries", id);
+                    await updateDoc(docRef, {
+                        status: 'completed',
+                        emptyShellsReturned: Number(currentShells) || 0,
+                        completedAt: serverTimestamp()
+                    });
+                    alert("Cập nhật thành công!");
+                } catch (e) { alert("Lỗi: " + e.message); }
+            };
+
+            if (loading) return <div className="p-10 text-center text-slate-500">Đang kết nối Firebase...</div>;
+
+            return (
+                <div className="min-h-screen">
+                    <header className="bg-white border-b p-4 sticky top-0 z-10 shadow-sm flex justify-between items-center">
+                        <h1 className="text-xl font-bold text-blue-600 italic">Giviso Water 💧</h1>
+                        <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
+                            {deliveries.filter(d => d.status !== 'completed').length} Đơn mới
+                        </span>
+                    </header>
+
+                    <main className="p-4 space-y-4">
+                        {deliveries.map(item => (
+                            <div key={item.id} className={`bg-white rounded-2xl p-5 border shadow-sm ${item.status === 'completed' ? 'opacity-50' : 'border-slate-100'}`}>
+                                <div className="flex justify-between items-start mb-2">
+                                    <h3 className="font-bold text-slate-800">{item.customerName}</h3>
+                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${item.status === 'completed' ? 'bg-slate-200 text-slate-500' : 'bg-amber-100 text-amber-600'}`}>
+                                        {item.status === 'completed' ? 'XONG' : 'CHỜ GIAO'}
+                                    </span>
+                                </div>
+                                <p className="text-sm text-slate-500 mb-4">📍 {item.address}</p>
+                                
+                                <div className="flex justify-between items-center py-3 border-y border-slate-50 mb-4">
+                                    <div className="text-sm">Giao: <strong>{item.quantity} bình</strong></div>
+                                    <a href={`tel:${item.phone}`} className="text-green-600 font-bold text-sm">📞 Gọi điện</a>
+                                </div>
+
+                                {item.status !== 'completed' && (
+                                    <div className="space-y-3">
+                                        <input 
+                                            type="number" 
+                                            id={`shells-${item.id}`}
+                                            placeholder="Số vỏ thu về..."
+                                            className="w-full bg-slate-100 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-400"
+                                        />
+                                        <button 
+                                            onClick={() => handleComplete(item.id, document.getElementById(`shells-${item.id}`).value)}
+                                            className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl active:scale-95 transition-all"
+                                        >
+                                            XÁC NHẬN HOÀN THÀNH
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </main>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
 </html>
