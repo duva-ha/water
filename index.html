@@ -3,164 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giviso Water Management</title>
+    <title>GIVISO SUPER APP - LOGIC UPGRADE</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700;900&display=swap" rel="stylesheet">
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, updateDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY", // Dán mã của bạn vào đây
-            projectId: "YOUR_PROJECT_ID"
-        };
-        const app = initializeApp(firebaseConfig);
-        window.db = getFirestore(app);
-        window.fs = { collection, onSnapshot, addDoc, deleteDoc, updateDoc, doc, query, orderBy, serverTimestamp };
-    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Lexend', sans-serif; background-color: #f0f2f5; }
-        .grid-container { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 20px; height: calc(100vh - 40px); }
-        .bento-box { @apply rounded-[3rem] p-10 shadow-sm border border-white/50 flex flex-col overflow-hidden transition-transform hover:scale-[1.01]; }
-        .huge-title { @apply text-5xl font-black tracking-tighter mb-8 uppercase italic; }
-        .input-field { @apply bg-white/60 border-none rounded-2xl px-5 py-4 mb-3 w-full font-bold text-lg focus:ring-4 focus:ring-white outline-none; }
-        .btn-action { @apply bg-white/80 text-zinc-900 px-8 py-4 rounded-2xl font-black text-lg uppercase shadow-sm hover:bg-white transition-all active:scale-95; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-thumb { @apply bg-black/10 rounded-full; }
+        body { font-family: 'Space Grotesk', sans-serif; background: #000; color: #fff; }
+        .bento-box { @apply border-4 border-white p-6 rounded-[2rem] h-full overflow-hidden flex flex-col transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_rgba(255,255,255,1)]; }
+        .title-huge { @apply text-4xl font-black uppercase tracking-tighter mb-6 leading-none; }
+        .input-brutal { @apply bg-white border-2 border-black text-black px-4 py-2 rounded-xl font-bold focus:ring-4 focus:ring-yellow-400 outline-none w-full text-sm; }
+        .btn-brutal { @apply bg-white text-black font-black px-4 py-2 rounded-xl hover:bg-yellow-400 transition-colors uppercase text-sm border-2 border-black active:translate-y-1; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { @apply bg-white rounded-full; }
     </style>
 </head>
-<body class="p-5">
+<body class="p-4 md:p-8">
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
         const App = () => {
-            const [customers, setCustomers] = useState([]);
-            const [deliveries, setDeliveries] = useState([]);
-            const [search, setSearch] = useState("");
-            const [newCust, setNewCust] = useState({ name: '', phone: '', address: '' });
+            // --- STATE QUẢN LÝ KHÁCH HÀNG ---
+            const [customers, setCustomers] = useState([
+                { id: Date.now(), name: "Nguyễn Văn A", phone: "090123", address: "Gò Vấp" }
+            ]);
+            const [custInput, setCustInput] = useState({ name: "", phone: "", address: "" });
 
-            useEffect(() => {
-                const { collection, onSnapshot, query, orderBy } = window.fs;
-                onSnapshot(query(collection(window.db, "customers"), orderBy("name")), (sn) => 
-                    setCustomers(sn.docs.map(d => ({id: d.id, ...d.data()}))));
-                onSnapshot(query(collection(window.db, "deliveries"), orderBy("timestamp", "desc")), (sn) => 
-                    setDeliveries(sn.docs.map(d => ({id: d.id, ...d.data()}))));
-            }, []);
+            // --- STATE QUẢN LÝ ĐƠN HÀNG ---
+            const [orders, setOrders] = useState([]);
+            const [orderInput, setOrderInput] = useState({ customerId: "", qtyBinh: "", qtyLoc: "", date: "" });
 
-            const addCustomer = async () => {
-                if(!newCust.name) return;
-                await window.fs.addDoc(window.fs.collection(window.db, "customers"), newCust);
-                setNewCust({ name: '', phone: '', address: '' });
+            // --- LOGIC KHÁCH HÀNG ---
+            const addCustomer = () => {
+                if (!custInput.name || !custInput.phone) return alert("Nhập tên và SĐT!");
+                setCustomers([...customers, { ...custInput, id: Date.now() }]);
+                setCustInput({ name: "", phone: "", address: "" });
             };
 
-            const markAsCollected = async (id) => {
-                await window.fs.updateDoc(window.fs.doc(window.db, "deliveries", id), { collected: true });
+            const deleteCustomer = (id) => {
+                setCustomers(customers.filter(c => c.id !== id));
             };
 
-            const deleteItem = async (col, id) => {
-                if(confirm("Bạn có chắc chắn muốn xóa?")) await window.fs.deleteDoc(window.fs.doc(window.db, col, id));
+            // --- LOGIC ĐƠN HÀNG ---
+            const addOrder = () => {
+                if (!orderInput.customerId || !orderInput.qtyBinh) return alert("Chọn khách và nhập SL bình!");
+                const client = customers.find(c => c.id === Number(orderInput.customerId));
+                setOrders([{ ...orderInput, id: Date.now(), customerName: client.name }, ...orders]);
+                setOrderInput({ customerId: "", qtyBinh: "", qtyLoc: "", date: "" });
             };
-
-            const totalDebtShells = deliveries.reduce((s, d) => s + (!d.collected ? (Number(d.quantity) || 0) : 0), 0);
-            const totalDebtCash = totalDebtShells * 50000;
 
             return (
-                <div className="grid-container">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-screen">
                     
-                    {/* 1. QUẢN LÝ KHÁCH HÀNG (Xanh Mint Nhạt) */}
-                    <div className="bento-box bg-[#e2f3ed]">
-                        <h2 className="huge-title text-[#2d6a4f]">Khách Hàng</h2>
-                        <div className="bg-white/40 p-6 rounded-[2rem] mb-6 border border-white">
-                            <input className="input-field" placeholder="HỌ TÊN KHÁCH" value={newCust.name} onChange={e => setNewCust({...newCust, name: e.target.value})} />
-                            <div className="flex gap-3">
-                                <input className="input-field" placeholder="SĐT" value={newCust.phone} onChange={e => setNewCust({...newCust, phone: e.target.value})} />
-                                <input className="input-field" placeholder="ĐỊA CHỈ" value={newCust.address} onChange={e => setNewCust({...newCust, address: e.target.value})} />
-                            </div>
-                            <button onClick={addCustomer} className="btn-action w-full mt-2">Thêm Khách Mới +</button>
-                        </div>
-                        <div className="flex-1 overflow-auto space-y-4 pr-2">
-                            {customers.map((c, i) => (
-                                <div key={c.id} className="flex justify-between items-center p-6 bg-white rounded-3xl shadow-sm border border-emerald-50">
-                                    <span className="font-black text-2xl">{i+1}. {c.name}</span>
-                                    <div className="flex gap-4 items-center">
-                                        <span className="text-zinc-400 font-bold">{c.phone}</span>
-                                        <button onClick={() => deleteItem("customers", c.id)} className="text-red-400 font-black">XÓA</button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* 2. QUẢN LÝ ĐƠN HÀNG (Hồng Nhạt) */}
-                    <div className="bento-box bg-[#fce4ec]">
-                        <h2 className="huge-title text-[#ad1457]">Đơn Hàng</h2>
-                        <div className="flex-1 overflow-auto space-y-4">
-                            {deliveries.filter(d => !d.collected).map(d => (
-                                <div key={d.id} className="bg-white p-8 rounded-[2.5rem] flex justify-between items-center shadow-sm">
-                                    <div>
-                                        <p className="font-black text-3xl mb-1">{d.customerName}</p>
-                                        <p className="text-pink-400 font-bold uppercase tracking-widest text-sm">Hẹn Giao: {d.deliveryDate || 'Hôm nay'}</p>
-                                    </div>
-                                    <div className="text-right">
-                                        <p className="text-5xl font-black text-pink-600 leading-none mb-2">{d.quantity}B</p>
-                                        <button onClick={() => deleteItem("deliveries", d.id)} className="text-xs font-bold text-zinc-300 uppercase">Xóa Đơn</button>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* 3. CÔNG NỢ (Vàng Nhạt) */}
-                    <div className="bento-box bg-[#fff9db]">
-                        <h2 className="huge-title text-[#f08c00]">Công Nợ</h2>
-                        <div className="flex-1 overflow-auto space-y-4 pr-2">
-                            {deliveries.filter(d => !d.collected).map(d => (
-                                <div key={d.id} className="bg-white p-8 rounded-[2.5rem] border-4 border-yellow-200 flex justify-between items-center">
-                                    <div>
-                                        <p className="font-black text-3xl mb-1">{d.customerName}</p>
-                                        <p className="text-xl text-yellow-600 font-bold uppercase italic">Nợ {d.quantity} Vỏ Bình</p>
-                                    </div>
-                                    <button onClick={() => markAsCollected(d.id)} className="bg-[#f08c00] text-white px-8 py-4 rounded-3xl font-black text-lg shadow-md">ĐÃ THU ✓</button>
-                                </div>
-                            ))}
-                            {deliveries.filter(d => d.collected).map(d => (
-                                <div key={d.id} className="bg-zinc-100/50 p-6 rounded-3xl opacity-40 flex justify-between items-center italic">
-                                    <p className="font-bold text-2xl">{d.customerName} (Đã xong)</p>
-                                    <span className="text-green-500 text-2xl font-black">✓</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* 4. TỔNG HỢP (Xanh Dương Nhạt) */}
-                    <div className="bento-box bg-[#e7f5ff]">
-                        <h2 className="huge-title text-[#1971c2]">Báo Cáo</h2>
-                        <input className="input-field !bg-white border-4 border-blue-100 mb-8 !text-2xl h-20 px-8" placeholder="TÌM TÊN KHÁCH HÀNG..." onChange={e => setSearch(e.target.value)} />
+                    {/* 1. QUẢN LÝ KHÁCH HÀNG */}
+                    <div className="bento-box bg-[#00FF66] text-black">
+                        <h2 className="title-huge">Khách Hàng</h2>
                         
-                        <div className="grid grid-cols-2 gap-6 flex-1">
-                            <div className="bg-white p-10 rounded-[3rem] flex flex-col justify-center items-center shadow-sm border-b-8 border-blue-200">
-                                <p className="text-sm font-black text-blue-400 uppercase tracking-[0.2em] mb-4">Tổng nợ bình</p>
-                                <p className="text-8xl font-black text-blue-600 leading-none tracking-tighter">{totalDebtShells}</p>
+                        {/* Form thêm khách */}
+                        <div className="grid grid-cols-3 gap-2 mb-4 bg-black/10 p-3 rounded-2xl border-2 border-black">
+                            <input className="input-brutal" placeholder="Tên" value={custInput.name} onChange={e => setCustInput({...custInput, name: e.target.value})} />
+                            <input className="input-brutal" placeholder="SĐT" value={custInput.phone} onChange={e => setCustInput({...custInput, phone: e.target.value})} />
+                            <input className="input-brutal" placeholder="Địa chỉ" value={custInput.address} onChange={e => setCustInput({...custInput, address: e.target.value})} />
+                            <button onClick={addCustomer} className="btn-brutal col-span-3 bg-black text-white">Lưu Khách Hàng +</button>
+                        </div>
+
+                        <div className="flex-1 overflow-auto bg-white/20 rounded-2xl border-2 border-black">
+                            <table className="w-full text-left font-bold">
+                                <thead className="bg-black text-white sticky top-0">
+                                    <tr>
+                                        <th className="p-2 text-xs">Tên</th>
+                                        <th className="p-2 text-xs">SĐT</th>
+                                        <th className="p-2 text-xs text-right italic">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {customers.map(c => (
+                                        <tr key={c.id} className="border-b border-black/20">
+                                            <td className="p-2 text-sm uppercase">{c.name}</td>
+                                            <td className="p-2 text-sm">{c.phone}</td>
+                                            <td className="p-2 text-right">
+                                                <button onClick={() => deleteCustomer(c.id)} className="text-red-600 font-black px-2 hover:bg-red-600 hover:text-white rounded">X</button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    {/* 2. QUẢN LÝ ĐƠN HÀNG */}
+                    <div className="bento-box bg-[#FF00FF] text-white">
+                        <h2 className="title-huge italic">Đơn Hàng</h2>
+                        
+                        {/* Form tạo đơn hàng */}
+                        <div className="grid grid-cols-12 gap-2 mb-6 bg-white/10 p-4 rounded-3xl border-2 border-white">
+                            <div className="col-span-12 md:col-span-4">
+                                <label className="text-[10px] font-black uppercase">Chọn Khách</label>
+                                <select 
+                                    className="input-brutal"
+                                    value={orderInput.customerId}
+                                    onChange={e => setOrderInput({...orderInput, customerId: e.target.value})}
+                                >
+                                    <option value="">-- KHÁCH --</option>
+                                    {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                </select>
                             </div>
-                            <div className="bg-white p-10 rounded-[3rem] flex flex-col justify-center items-center shadow-sm border-b-8 border-orange-200">
-                                <p className="text-sm font-black text-orange-300 uppercase tracking-[0.2em] mb-4">Tổng nợ tiền</p>
-                                <p className="text-4xl font-black text-orange-500 tracking-tighter">{totalDebtCash.toLocaleString()}đ</p>
+                            <div className="col-span-4 md:col-span-2">
+                                <label className="text-[10px] font-black uppercase italic">SL Bình</label>
+                                <input type="number" className="input-brutal" placeholder="0" value={orderInput.qtyBinh} onChange={e => setOrderInput({...orderInput, qtyBinh: e.target.value})} />
                             </div>
-                            <div className="col-span-2 bg-zinc-900 rounded-[3rem] p-8 text-white flex justify-between items-center">
-                                <div>
-                                    <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 italic">Kết quả tìm kiếm cho: {search || 'Hệ thống'}</p>
-                                    <p className="text-3xl font-black leading-none uppercase tracking-tighter">{deliveries.filter(d => d.customerName?.toLowerCase().includes(search.toLowerCase())).length} Đơn hàng phát sinh</p>
+                            <div className="col-span-4 md:col-span-2">
+                                <label className="text-[10px] font-black uppercase italic">SL Lốc</label>
+                                <input type="number" className="input-brutal" placeholder="0" value={orderInput.qtyLoc} onChange={e => setOrderInput({...orderInput, qtyLoc: e.target.value})} />
+                            </div>
+                            <div className="col-span-4 md:col-span-2">
+                                <label className="text-[10px] font-black uppercase italic">Ngày</label>
+                                <input type="date" className="input-brutal p-1" value={orderInput.date} onChange={e => setOrderInput({...orderInput, date: e.target.value})} />
+                            </div>
+                            <div className="col-span-12 md:col-span-2 flex items-end">
+                                <button onClick={addOrder} className="btn-brutal w-full h-[42px] bg-yellow-400 text-black">Tạo</button>
+                            </div>
+                        </div>
+
+                        <div className="flex-1 overflow-auto space-y-2 pr-2">
+                            {orders.map(o => (
+                                <div key={o.id} className="bg-black p-3 rounded-2xl border-2 border-white flex justify-between items-center group transition-all hover:bg-white hover:text-black">
+                                    <div>
+                                        <p className="font-black uppercase italic leading-none">{o.customerName}</p>
+                                        <p className="text-[10px] font-bold opacity-60 italic">Hẹn: {o.date || '---'}</p>
+                                    </div>
+                                    <div className="flex gap-4 items-center">
+                                        <div className="text-right">
+                                            <p className="text-xl font-black">{o.qtyBinh}B / {o.qtyLoc || 0}L</p>
+                                        </div>
+                                        <button onClick={() => setOrders(orders.filter(ord => ord.id !== o.id))} className="text-red-500 font-black p-1">X</button>
+                                    </div>
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-xs font-bold text-zinc-500 uppercase italic mb-1">Trạng thái</p>
-                                    <p className="text-2xl font-black text-blue-400">ỔN ĐỊNH</p>
-                                </div>
-                            </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Ô SỐ 3 VÀ 4 GIỮ NGUYÊN HOẶC TÙY BIẾN THEO CODE CỦA BẠN */}
+                    <div className="bento-box bg-[#FFFF00] text-black">
+                        <h2 className="title-huge">Công Nợ</h2>
+                        <p className="italic font-bold opacity-50">Dữ liệu công nợ sẽ được đồng bộ từ đơn hàng hoàn thành...</p>
+                    </div>
+
+                    <div className="bento-box bg-[#0066FF] text-white italic">
+                        <h2 className="title-huge italic underline">Thống Kê</h2>
+                        <div className="bg-white/10 p-6 rounded-[2rem] border-2 border-white">
+                            <p className="text-6xl font-black tracking-tighter">{orders.length}</p>
+                            <p className="text-xl font-bold uppercase tracking-widest">Đơn Trong Ngày</p>
                         </div>
                     </div>
 
