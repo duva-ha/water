@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giviso Water - Quản Lý Toàn Diện</title>
+    <title>Giviso Water Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700;900&display=swap" rel="stylesheet">
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot, addDoc, deleteDoc, updateDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -22,16 +22,17 @@
         window.fs = { collection, onSnapshot, addDoc, deleteDoc, updateDoc, doc, query, orderBy, serverTimestamp };
     </script>
     <style>
-        body { font-family: 'Quicksand', sans-serif; background-color: #f8fafc; color: #334155; }
-        .bento-card { @apply bg-white rounded-[2.5rem] p-8 shadow-sm border border-slate-100 flex flex-col h-full transition-all hover:shadow-md; }
-        .title-large { @apply text-3xl font-bold tracking-tight mb-6; }
-        .input-soft { @apply bg-slate-50 border-none rounded-2xl px-4 py-3 mb-2 w-full focus:ring-2 focus:ring-blue-200 outline-none text-sm; }
-        .btn-main { @apply bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all; }
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { @apply bg-slate-200 rounded-full; }
+        body { font-family: 'Lexend', sans-serif; background-color: #f0f2f5; }
+        .grid-container { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 20px; height: calc(100vh - 40px); }
+        .bento-box { @apply rounded-[3rem] p-10 shadow-sm border border-white/50 flex flex-col overflow-hidden transition-transform hover:scale-[1.01]; }
+        .huge-title { @apply text-5xl font-black tracking-tighter mb-8 uppercase italic; }
+        .input-field { @apply bg-white/60 border-none rounded-2xl px-5 py-4 mb-3 w-full font-bold text-lg focus:ring-4 focus:ring-white outline-none; }
+        .btn-action { @apply bg-white/80 text-zinc-900 px-8 py-4 rounded-2xl font-black text-lg uppercase shadow-sm hover:bg-white transition-all active:scale-95; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { @apply bg-black/10 rounded-full; }
     </style>
 </head>
-<body class="p-4 md:p-10">
+<body class="p-5">
     <div id="root"></div>
 
     <script type="text/babel">
@@ -45,120 +46,119 @@
 
             useEffect(() => {
                 const { collection, onSnapshot, query, orderBy } = window.fs;
-                // Lắng nghe Khách hàng
                 onSnapshot(query(collection(window.db, "customers"), orderBy("name")), (sn) => 
                     setCustomers(sn.docs.map(d => ({id: d.id, ...d.data()}))));
-                // Lắng nghe Đơn hàng/Nợ
                 onSnapshot(query(collection(window.db, "deliveries"), orderBy("timestamp", "desc")), (sn) => 
                     setDeliveries(sn.docs.map(d => ({id: d.id, ...d.data()}))));
             }, []);
 
-            // Logic: Thêm khách hàng
             const addCustomer = async () => {
                 if(!newCust.name) return;
                 await window.fs.addDoc(window.fs.collection(window.db, "customers"), newCust);
                 setNewCust({ name: '', phone: '', address: '' });
             };
 
-            // Logic: Thu nợ
             const markAsCollected = async (id) => {
-                const docRef = window.fs.doc(window.db, "deliveries", id);
-                await window.fs.updateDoc(docRef, { status: 'completed', collected: true });
+                await window.fs.updateDoc(window.fs.doc(window.db, "deliveries", id), { collected: true });
             };
 
-            // Logic: Xóa
             const deleteItem = async (col, id) => {
-                if(confirm("Xác nhận xóa?")) await window.fs.deleteDoc(window.fs.doc(window.db, col, id));
+                if(confirm("Bạn có chắc chắn muốn xóa?")) await window.fs.deleteDoc(window.fs.doc(window.db, col, id));
             };
 
-            const filteredData = deliveries.filter(d => d.customerName?.toLowerCase().includes(search.toLowerCase()));
             const totalDebtShells = deliveries.reduce((s, d) => s + (!d.collected ? (Number(d.quantity) || 0) : 0), 0);
             const totalDebtCash = totalDebtShells * 50000;
 
             return (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-7xl mx-auto">
+                <div className="grid-container">
                     
-                    {/* 1. QUẢN LÝ KHÁCH HÀNG (Màu Mint) */}
-                    <div className="bento-card bg-[#f0fff4]">
-                        <h2 className="title-large text-emerald-800">Khách Hàng</h2>
-                        <div className="mb-4 bg-white/50 p-4 rounded-3xl">
-                            <input className="input-soft" placeholder="Tên khách hàng..." value={newCust.name} onChange={e => setNewCust({...newCust, name: e.target.value})} />
-                            <div className="flex gap-2">
-                                <input className="input-soft" placeholder="SĐT" value={newCust.phone} onChange={e => setNewCust({...newCust, phone: e.target.value})} />
-                                <input className="input-soft" placeholder="Địa chỉ" value={newCust.address} onChange={e => setNewCust({...newCust, address: e.target.value})} />
+                    {/* 1. QUẢN LÝ KHÁCH HÀNG (Xanh Mint Nhạt) */}
+                    <div className="bento-box bg-[#e2f3ed]">
+                        <h2 className="huge-title text-[#2d6a4f]">Khách Hàng</h2>
+                        <div className="bg-white/40 p-6 rounded-[2rem] mb-6 border border-white">
+                            <input className="input-field" placeholder="HỌ TÊN KHÁCH" value={newCust.name} onChange={e => setNewCust({...newCust, name: e.target.value})} />
+                            <div className="flex gap-3">
+                                <input className="input-field" placeholder="SĐT" value={newCust.phone} onChange={e => setNewCust({...newCust, phone: e.target.value})} />
+                                <input className="input-field" placeholder="ĐỊA CHỈ" value={newCust.address} onChange={e => setNewCust({...newCust, address: e.target.value})} />
                             </div>
-                            <button onClick={addCustomer} className="btn-main bg-emerald-600 w-full">Thêm khách mới</button>
+                            <button onClick={addCustomer} className="btn-action w-full mt-2">Thêm Khách Mới +</button>
                         </div>
-                        <div className="flex-1 overflow-auto space-y-2">
+                        <div className="flex-1 overflow-auto space-y-4 pr-2">
                             {customers.map((c, i) => (
-                                <div key={c.id} className="flex justify-between items-center p-4 bg-white rounded-2xl border border-emerald-100">
-                                    <span className="font-bold text-lg">{i+1}. {c.name}</span>
-                                    <button onClick={() => deleteItem("customers", c.id)} className="text-red-400 text-xs font-bold uppercase">Xóa</button>
+                                <div key={c.id} className="flex justify-between items-center p-6 bg-white rounded-3xl shadow-sm border border-emerald-50">
+                                    <span className="font-black text-2xl">{i+1}. {c.name}</span>
+                                    <div className="flex gap-4 items-center">
+                                        <span className="text-zinc-400 font-bold">{c.phone}</span>
+                                        <button onClick={() => deleteItem("customers", c.id)} className="text-red-400 font-black">XÓA</button>
+                                    </div>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* 2. QUẢN LÝ ĐƠN HÀNG (Màu Lavender) */}
-                    <div className="bento-card bg-[#f5f3ff]">
-                        <h2 className="title-large text-purple-800">Đơn Hàng</h2>
-                        <div className="space-y-3 overflow-auto">
-                            {deliveries.filter(d => d.status !== 'completed').map(d => (
-                                <div key={d.id} className="bg-white p-5 rounded-3xl flex justify-between items-center shadow-sm">
+                    {/* 2. QUẢN LÝ ĐƠN HÀNG (Hồng Nhạt) */}
+                    <div className="bento-box bg-[#fce4ec]">
+                        <h2 className="huge-title text-[#ad1457]">Đơn Hàng</h2>
+                        <div className="flex-1 overflow-auto space-y-4">
+                            {deliveries.filter(d => !d.collected).map(d => (
+                                <div key={d.id} className="bg-white p-8 rounded-[2.5rem] flex justify-between items-center shadow-sm">
                                     <div>
-                                        <p className="font-bold text-xl">{d.customerName}</p>
-                                        <p className="text-xs text-purple-400 font-bold uppercase">Hẹn: {d.deliveryDate || 'Hôm nay'}</p>
+                                        <p className="font-black text-3xl mb-1">{d.customerName}</p>
+                                        <p className="text-pink-400 font-bold uppercase tracking-widest text-sm">Hẹn Giao: {d.deliveryDate || 'Hôm nay'}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-2xl font-black text-purple-600">{d.quantity}B</p>
-                                        <button onClick={() => deleteItem("deliveries", d.id)} className="text-[10px] font-bold text-slate-300">XÓA</button>
+                                        <p className="text-5xl font-black text-pink-600 leading-none mb-2">{d.quantity}B</p>
+                                        <button onClick={() => deleteItem("deliveries", d.id)} className="text-xs font-bold text-zinc-300 uppercase">Xóa Đơn</button>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* 3. CÔNG NỢ (Màu Peach) */}
-                    <div className="bento-card bg-[#fffaf3]">
-                        <h2 className="title-large text-orange-800">Công Nợ</h2>
-                        <div className="flex-1 overflow-auto space-y-3">
+                    {/* 3. CÔNG NỢ (Vàng Nhạt) */}
+                    <div className="bento-box bg-[#fff9db]">
+                        <h2 className="huge-title text-[#f08c00]">Công Nợ</h2>
+                        <div className="flex-1 overflow-auto space-y-4 pr-2">
                             {deliveries.filter(d => !d.collected).map(d => (
-                                <div key={d.id} className="bg-white p-5 rounded-3xl border-2 border-orange-100 flex justify-between items-center">
+                                <div key={d.id} className="bg-white p-8 rounded-[2.5rem] border-4 border-yellow-200 flex justify-between items-center">
                                     <div>
-                                        <p className="font-bold text-lg">{d.customerName}</p>
-                                        <p className="text-sm text-orange-500 font-bold">Nợ {d.quantity} bình</p>
+                                        <p className="font-black text-3xl mb-1">{d.customerName}</p>
+                                        <p className="text-xl text-yellow-600 font-bold uppercase italic">Nợ {d.quantity} Vỏ Bình</p>
                                     </div>
-                                    <button onClick={() => markAsCollected(d.id)} className="bg-orange-500 text-white px-4 py-2 rounded-xl text-xs font-bold">THU TIỀN</button>
+                                    <button onClick={() => markAsCollected(d.id)} className="bg-[#f08c00] text-white px-8 py-4 rounded-3xl font-black text-lg shadow-md">ĐÃ THU ✓</button>
                                 </div>
                             ))}
                             {deliveries.filter(d => d.collected).map(d => (
-                                <div key={d.id} className="bg-slate-50 p-4 rounded-2xl opacity-50 flex justify-between items-center grayscale">
-                                    <p className="font-bold text-slate-400">{d.customerName} (Đã thu)</p>
-                                    <span className="text-green-500 text-sm font-bold">✓</span>
+                                <div key={d.id} className="bg-zinc-100/50 p-6 rounded-3xl opacity-40 flex justify-between items-center italic">
+                                    <p className="font-bold text-2xl">{d.customerName} (Đã xong)</p>
+                                    <span className="text-green-500 text-2xl font-black">✓</span>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* 4. BÁO CÁO TỔNG HỢP (Màu Sky) */}
-                    <div className="bento-card bg-[#f0f9ff]">
-                        <h2 className="title-large text-sky-800">Báo Cáo Thông Minh</h2>
-                        <input className="input-soft !bg-white border-2 border-sky-100 mb-6" placeholder="Tìm tên khách hàng để xem công nợ..." onChange={e => setSearch(e.target.value)} />
+                    {/* 4. TỔNG HỢP (Xanh Dương Nhạt) */}
+                    <div className="bento-box bg-[#e7f5ff]">
+                        <h2 className="huge-title text-[#1971c2]">Báo Cáo</h2>
+                        <input className="input-field !bg-white border-4 border-blue-100 mb-8 !text-2xl h-20 px-8" placeholder="TÌM TÊN KHÁCH HÀNG..." onChange={e => setSearch(e.target.value)} />
                         
-                        <div className="grid grid-cols-2 gap-4 flex-1">
-                            <div className="bg-white p-6 rounded-[2rem] flex flex-col justify-center items-center text-center">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Tổng nợ bình</p>
-                                <p className="text-5xl font-black text-sky-600 leading-none">{totalDebtShells}</p>
+                        <div className="grid grid-cols-2 gap-6 flex-1">
+                            <div className="bg-white p-10 rounded-[3rem] flex flex-col justify-center items-center shadow-sm border-b-8 border-blue-200">
+                                <p className="text-sm font-black text-blue-400 uppercase tracking-[0.2em] mb-4">Tổng nợ bình</p>
+                                <p className="text-8xl font-black text-blue-600 leading-none tracking-tighter">{totalDebtShells}</p>
                             </div>
-                            <div className="bg-white p-6 rounded-[2rem] flex flex-col justify-center items-center text-center">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2">Tổng nợ tiền</p>
-                                <p className="text-3xl font-black text-orange-600">{totalDebtCash.toLocaleString()}đ</p>
+                            <div className="bg-white p-10 rounded-[3rem] flex flex-col justify-center items-center shadow-sm border-b-8 border-orange-200">
+                                <p className="text-sm font-black text-orange-300 uppercase tracking-[0.2em] mb-4">Tổng nợ tiền</p>
+                                <p className="text-4xl font-black text-orange-500 tracking-tighter">{totalDebtCash.toLocaleString()}đ</p>
                             </div>
-                            <div className="col-span-2 bg-slate-900 rounded-[2rem] p-6 text-white">
-                                <p className="text-xs font-bold opacity-50 uppercase mb-4 tracking-widest">Phân tích nhanh cho {search || 'hệ thống'}</p>
-                                <div className="space-y-1">
-                                    <p className="text-xl font-bold italic">Sản lượng: {filteredData.length} đơn</p>
-                                    <p className="text-xl font-bold italic">Trạng thái: {totalDebtShells > 20 ? 'Cảnh báo nợ cao' : 'Ổn định'}</p>
+                            <div className="col-span-2 bg-zinc-900 rounded-[3rem] p-8 text-white flex justify-between items-center">
+                                <div>
+                                    <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2 italic">Kết quả tìm kiếm cho: {search || 'Hệ thống'}</p>
+                                    <p className="text-3xl font-black leading-none uppercase tracking-tighter">{deliveries.filter(d => d.customerName?.toLowerCase().includes(search.toLowerCase())).length} Đơn hàng phát sinh</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-xs font-bold text-zinc-500 uppercase italic mb-1">Trạng thái</p>
+                                    <p className="text-2xl font-black text-blue-400">ỔN ĐỊNH</p>
                                 </div>
                             </div>
                         </div>
