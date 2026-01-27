@@ -2,117 +2,119 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Giviso Water - Demo Giao Hàng</title>
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giviso Water - Hệ Thống Quản Trị Hợp Nhất</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, doc, updateDoc, serverTimestamp, query, orderBy } 
-        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // --- DÁN FIREBASE CONFIG CỦA BẠN VÀO ĐÂY ---
         const firebaseConfig = {
-            apiKey: "AIza...",
-            authDomain: "your-app.firebaseapp.com",
-            projectId: "your-app",
-            storageBucket: "your-app.appspot.com",
-            messagingSenderId: "...",
-            appId: "..."
+            apiKey: "AIza...", // Dán mã của bạn vào đây
+            projectId: "your-project-id",
+            // ... các thông số khác
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        window.db = db; // Đưa ra window để React dùng được
-        window.fs = { collection, onSnapshot, doc, updateDoc, serverTimestamp, query, orderBy };
+        window.db = getFirestore(app);
+        window.fs = { collection, onSnapshot, query, orderBy };
     </script>
+
+    <style>
+        .dashboard-card { @apply bg-white rounded-xl shadow-sm border border-slate-200 p-4 overflow-hidden flex flex-col; }
+        .section-title { @apply text-sm font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2; }
+    </style>
 </head>
-<body class="bg-slate-50 font-sans">
-    <div id="root"></div>
+<body class="bg-slate-100 h-screen overflow-hidden p-2">
+    <div id="root" class="h-full"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
 
         const App = () => {
-            const [deliveries, setDeliveries] = useState([]);
-            const [loading, setLoading] = useState(true);
+            const [data, setData] = useState([]);
 
             useEffect(() => {
                 const { collection, onSnapshot, query, orderBy } = window.fs;
                 const q = query(collection(window.db, "deliveries"), orderBy("timestamp", "desc"));
-                
-                const unsubscribe = onSnapshot(q, (snapshot) => {
-                    const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                    setDeliveries(docs);
-                    setLoading(false);
-                });
-                return () => unsubscribe();
+                const unsub = onSnapshot(q, (sn) => setData(sn.docs.map(d => ({id: d.id, ...d.data()}))));
+                return () => unsub();
             }, []);
 
-            const handleComplete = async (id, currentShells) => {
-                const { doc, updateDoc, serverTimestamp } = window.fs;
-                try {
-                    const docRef = doc(window.db, "deliveries", id);
-                    await updateDoc(docRef, {
-                        status: 'completed',
-                        emptyShellsReturned: Number(currentShells) || 0,
-                        completedAt: serverTimestamp()
-                    });
-                    alert("Cập nhật thành công!");
-                } catch (e) { alert("Lỗi: " + e.message); }
-            };
-
-            if (loading) return <div className="p-10 text-center text-slate-500">Đang kết nối Firebase...</div>;
-
             return (
-                <div className="min-h-screen">
-                    <header className="bg-white border-b p-4 sticky top-0 z-10 shadow-sm flex justify-between items-center">
-                        <h1 className="text-xl font-bold text-blue-600 italic">Giviso Water 💧</h1>
-                        <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">
-                            {deliveries.filter(d => d.status !== 'completed').length} Đơn mới
-                        </span>
-                    </header>
-
-                    <main className="p-4 space-y-4">
-                        {deliveries.map(item => (
-                            <div key={item.id} className={`bg-white rounded-2xl p-5 border shadow-sm ${item.status === 'completed' ? 'opacity-50' : 'border-slate-100'}`}>
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="font-bold text-slate-800">{item.customerName}</h3>
-                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${item.status === 'completed' ? 'bg-slate-200 text-slate-500' : 'bg-amber-100 text-amber-600'}`}>
-                                        {item.status === 'completed' ? 'XONG' : 'CHỜ GIAO'}
-                                    </span>
-                                </div>
-                                <p className="text-sm text-slate-500 mb-4">📍 {item.address}</p>
-                                
-                                <div className="flex justify-between items-center py-3 border-y border-slate-50 mb-4">
-                                    <div className="text-sm">Giao: <strong>{item.quantity} bình</strong></div>
-                                    <a href={`tel:${item.phone}`} className="text-green-600 font-bold text-sm">📞 Gọi điện</a>
-                                </div>
-
-                                {item.status !== 'completed' && (
-                                    <div className="space-y-3">
-                                        <input 
-                                            type="number" 
-                                            id={`shells-${item.id}`}
-                                            placeholder="Số vỏ thu về..."
-                                            className="w-full bg-slate-100 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-blue-400"
-                                        />
-                                        <button 
-                                            onClick={() => handleComplete(item.id, document.getElementById(`shells-${item.id}`).value)}
-                                            className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl active:scale-95 transition-all"
-                                        >
-                                            XÁC NHẬN HOÀN THÀNH
-                                        </button>
-                                    </div>
-                                )}
+                <div className="grid grid-cols-2 grid-rows-2 gap-2 h-full">
+                    
+                    {/* 1. QUẢN LÝ CHUNG (BÁO CÁO) */}
+                    <div className="dashboard-card border-l-4 border-l-blue-500">
+                        <h2 className="section-title">📊 Tổng hợp - Báo cáo</h2>
+                        <div className="grid grid-cols-2 gap-2 mb-4">
+                            <div className="bg-blue-50 p-3 rounded-lg text-center">
+                                <p className="text-[10px] text-blue-600 font-bold uppercase">Sản lượng</p>
+                                <p className="text-2xl font-black text-blue-800">{data.reduce((sum, item) => sum + (Number(item.quantity) || 0), 0)}</p>
                             </div>
-                        ))}
-                    </main>
+                            <div className="bg-green-50 p-3 rounded-lg text-center">
+                                <p className="text-[10px] text-green-600 font-bold uppercase">Vỏ đã thu</p>
+                                <p className="text-2xl font-black text-green-800">{data.reduce((sum, item) => sum + (Number(item.emptyShellsReturned) || 0), 0)}</p>
+                            </div>
+                        </div>
+                        <div className="text-xs text-slate-400 italic mt-auto italic">Dữ liệu cập nhật thời gian thực từ hệ thống.</div>
+                    </div>
+
+                    {/* 2. QUẢN LÝ KHÁCH HÀNG */}
+                    <div className="dashboard-card border-l-4 border-l-purple-500">
+                        <h2 className="section-title">👥 Quản lý khách hàng</h2>
+                        <div className="overflow-y-auto space-y-2">
+                            {[...new Set(data.map(d => d.customerName))].map(name => (
+                                <div key={name} className="flex justify-between items-center p-2 bg-slate-50 rounded border border-slate-100 text-sm">
+                                    <span className="font-medium text-slate-700">{name}</span>
+                                    <span className="text-[10px] bg-purple-100 text-purple-600 px-2 py-0.5 rounded font-bold uppercase">Thân thiết</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* 3. QUẢN LÝ ĐƠN HÀNG (SHIPPING) */}
+                    <div className="dashboard-card border-l-4 border-l-amber-500">
+                        <h2 className="section-title">🚚 Quản lý đơn hàng</h2>
+                        <div className="overflow-y-auto space-y-2">
+                            {data.map(order => (
+                                <div key={order.id} className="p-2 border rounded-lg text-xs flex justify-between items-center bg-white shadow-sm">
+                                    <div>
+                                        <p className="font-bold text-slate-800">{order.customerName}</p>
+                                        <p className="text-slate-400 italic truncate w-32">{order.address}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-black text-amber-600">{order.quantity}B</p>
+                                        <p className={`text-[9px] font-bold ${order.status === 'completed' ? 'text-green-500' : 'text-amber-400'}`}>
+                                            {order.status === 'completed' ? 'DONE' : 'DELIVERING'}
+                                        </p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* 4. QUẢN LÝ KHO */}
+                    <div className="dashboard-card border-l-4 border-l-cyan-500">
+                        <h2 className="section-title">📦 Quản lý kho</h2>
+                        <div className="flex-1 flex flex-col justify-center items-center">
+                            <div className="relative w-24 h-24 flex items-center justify-center border-4 border-cyan-100 rounded-full">
+                                <div className="text-center font-black text-cyan-600">
+                                    <p className="text-xl leading-none">500</p>
+                                    <p className="text-[8px] uppercase">Tồn kho</p>
+                                </div>
+                            </div>
+                            <div className="mt-4 grid grid-cols-2 gap-4 w-full text-center">
+                                <div><p className="text-xs text-slate-400 font-bold">NHẬP</p><p className="font-bold text-slate-700">+1200</p></div>
+                                <div><p className="text-xs text-slate-400 font-bold">XUẤT</p><p className="font-bold text-slate-700">-700</p></div>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             );
         };
