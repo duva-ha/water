@@ -3,22 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giviso OS - Factory Management</title>
+    <title>Giviso Water - Quản Lý Công Nợ & Đơn Hàng</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // THAY CONFIG CỦA BẠN VÀO ĐÂY
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            projectId: "YOUR_PROJECT_ID"
+            apiKey: "AIza...", // Thay bằng mã của bạn
+            projectId: "your-project-id"
         };
 
         const app = initializeApp(firebaseConfig);
@@ -27,120 +25,105 @@
     </script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #fafafa; }
-        .bento-card { @apply bg-white border border-zinc-200 rounded-3xl p-6 transition-all duration-300 hover:shadow-xl hover:shadow-zinc-200/50 flex flex-col; }
-        .metric-label { @apply text-[10px] font-extrabold text-zinc-400 uppercase tracking-widest mb-1; }
-        .metric-value { @apply text-3xl font-extrabold text-zinc-900 tracking-tighter; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-thumb { @apply bg-zinc-200 rounded-full; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #ffffff; }
+        .big-stat { @apply text-6xl font-extrabold tracking-tighter leading-none text-zinc-900; }
+        .label-caps { @apply text-[12px] font-bold text-zinc-400 uppercase tracking-[0.2em] mb-2; }
+        .card-flat { @apply border-b border-zinc-100 py-6 last:border-0; }
+        ::-webkit-scrollbar { width: 0px; }
     </style>
 </head>
-<body class="h-screen p-4 lg:p-8 text-zinc-900">
-    <div id="root" class="h-full"></div>
+<body class="p-6 md:p-12">
+    <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
 
         const App = () => {
             const [data, setData] = useState([]);
+            const [currentTime, setCurrentTime] = useState(new Date());
 
             useEffect(() => {
+                const timer = setInterval(() => setCurrentTime(new Date()), 1000);
                 const { collection, onSnapshot, query, orderBy } = window.fs;
                 const q = query(collection(window.db, "deliveries"), orderBy("timestamp", "desc"));
                 const unsub = onSnapshot(q, (sn) => setData(sn.docs.map(d => ({id: d.id, ...d.data()}))));
-                return () => unsub();
+                return () => { unsub(); clearInterval(timer); };
             }, []);
 
+            // Tính toán nợ bình và nợ tiền (giả định giá 50k/bình nếu chưa thanh toán)
+            const totalShellsDebt = data.reduce((s, i) => s + (Number(i.quantity) - (Number(i.emptyShellsReturned) || 0)), 0);
+            const pendingOrders = data.filter(d => d.status !== 'completed').length;
+
             return (
-                <div className="h-full flex flex-col gap-6">
-                    {/* Header Header */}
-                    <div className="flex justify-between items-end">
-                        <div>
-                            <h1 className="text-2xl font-black tracking-tighter italic">GIVISO OS.</h1>
-                            <p className="text-zinc-400 text-xs font-medium">Hệ thống điều hành sản xuất thực tế</p>
+                <div className="max-w-6xl mx-auto">
+                    {/* Header: Thời gian thực */}
+                    <header className="flex justify-between items-baseline mb-20">
+                        <h1 className="text-2xl font-black">GIVISO <span className="text-blue-600">.</span></h1>
+                        <div className="text-right">
+                            <p className="text-4xl font-bold tracking-tighter">
+                                {currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                            </p>
+                            <p className="label-caps !mb-0">{currentTime.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
                         </div>
-                        <div className="text-right hidden md:block">
-                            <p className="text-xs font-bold text-zinc-900 leading-none">27 Jan 2026</p>
-                            <p className="text-[10px] text-zinc-400 font-bold uppercase tracking-widest">v2.0 Stable</p>
+                    </header>
+
+                    {/* Section 1: Chỉ số Nợ & Tổng quát (Chữ cực to) */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-16 mb-24">
+                        <div>
+                            <p className="label-caps">Đơn chờ giao</p>
+                            <p className="big-stat text-blue-600">{pendingOrders}</p>
+                        </div>
+                        <div>
+                            <p className="label-caps">Bình khách đang nợ</p>
+                            <p className="big-stat text-red-500">{totalShellsDebt}</p>
+                        </div>
+                        <div>
+                            <p className="label-caps">Tạm tính công nợ (K)</p>
+                            <p className="big-stat">{totalShellsDebt * 50}</p> 
                         </div>
                     </div>
 
-                    {/* Dashboard Grid */}
-                    <div className="flex-1 grid grid-cols-12 grid-rows-6 gap-4">
-                        
-                        {/* 1. TỔNG HỢP (6x2) */}
-                        <div className="col-span-12 lg:col-span-7 row-span-2 bento-card justify-center">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-xs font-black uppercase tracking-widest text-zinc-900">Báo cáo hiệu suất</h2>
-                                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                            </div>
-                            <div className="grid grid-cols-3 gap-8">
-                                <div>
-                                    <p className="metric-label">Tổng sản lượng</p>
-                                    <p className="metric-value">{data.reduce((s, i) => s + (Number(i.quantity) || 0), 0)}</p>
-                                </div>
-                                <div>
-                                    <p className="metric-label">Vỏ hoàn lưu</p>
-                                    <p className="metric-value">{data.reduce((s, i) => s + (Number(i.emptyShellsReturned) || 0), 0)}</p>
-                                </div>
-                                <div>
-                                    <p className="metric-label">Tỷ lệ thu hồi</p>
-                                    <p className="metric-value text-blue-600">88%</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* 2. KHO (5x2) */}
-                        <div className="col-span-12 lg:col-span-5 row-span-2 bento-card bg-zinc-900 text-white border-none">
-                            <h2 className="text-[10px] font-black uppercase tracking-widest opacity-50 mb-4">Trình trạng kho</h2>
-                            <div className="flex items-end gap-2 mb-2">
-                                <span className="text-5xl font-black tracking-tighter">1,240</span>
-                                <span className="text-xs font-bold mb-2 opacity-60">Bình tồn</span>
-                            </div>
-                            <div className="w-full bg-zinc-800 h-1.5 rounded-full overflow-hidden mt-4">
-                                <div className="bg-blue-500 h-full w-[70%]"></div>
-                            </div>
-                            <p className="text-[10px] mt-4 opacity-40 font-bold uppercase italic">Dự báo hết hàng trong 3 ngày tới</p>
-                        </div>
-
-                        {/* 3. KHÁCH HÀNG (4x4) */}
-                        <div className="col-span-12 lg:col-span-4 row-span-4 bento-card">
-                            <h2 className="text-xs font-black uppercase tracking-widest mb-6">Khách hàng mới nhất</h2>
-                            <div className="space-y-4 overflow-y-auto pr-2">
-                                {[...new Set(data.map(d => d.customerName))].map((name, idx) => (
-                                    <div key={idx} className="flex items-center gap-3 p-1 hover:translate-x-1 transition-transform cursor-default">
-                                        <div className="w-8 h-8 rounded-full bg-zinc-100 flex items-center justify-center text-[10px] font-bold tracking-tighter uppercase">{name.substring(0,2)}</div>
-                                        <div className="flex-1 border-b border-zinc-50 pb-2">
-                                            <p className="text-xs font-bold text-zinc-800">{name}</p>
-                                            <p className="text-[10px] text-zinc-400">Khách lẻ / Trực tiếp</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* 4. ĐƠN HÀNG (8x4) */}
-                        <div className="col-span-12 lg:col-span-8 row-span-4 bento-card bg-zinc-50 border-none">
-                            <h2 className="text-xs font-black uppercase tracking-widest mb-6">Dòng thời gian đơn hàng</h2>
-                            <div className="overflow-y-auto pr-2 space-y-2">
-                                {data.map(order => (
-                                    <div key={order.id} className="bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm border border-zinc-100">
-                                        <div className="flex gap-4 items-center">
-                                            <div className={`w-2 h-2 rounded-full ${order.status === 'completed' ? 'bg-zinc-300' : 'bg-blue-600'}`}></div>
-                                            <div>
-                                                <p className="text-xs font-extrabold text-zinc-900">{order.customerName}</p>
-                                                <p className="text-[10px] text-zinc-400 font-medium italic">{order.address}</p>
-                                            </div>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
+                        {/* Section 2: Danh sách Đặt hàng & Thời gian */}
+                        <div>
+                            <h2 className="text-xl font-extrabold mb-8 pb-4 border-b-4 border-zinc-900 inline-block">Lộ trình giao hàng</h2>
+                            <div className="space-y-2">
+                                {data.filter(d => d.status !== 'completed').map(order => (
+                                    <div key={order.id} className="card-flat flex justify-between items-center group">
+                                        <div>
+                                            <p className="text-2xl font-bold tracking-tight group-hover:text-blue-600 transition-colors">{order.customerName}</p>
+                                            <p className="text-zinc-400 font-medium">{order.address}</p>
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-sm font-black text-zinc-900">{order.quantity}B</p>
-                                            <p className="text-[9px] font-bold text-zinc-400 uppercase">{order.status === 'completed' ? 'Shipped' : 'Delivering'}</p>
+                                            <p className="text-xl font-black">{order.quantity}B</p>
+                                            <p className="text-[10px] font-bold text-zinc-400">
+                                                {order.timestamp?.toDate().toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}
+                                            </p>
                                         </div>
                                     </div>
                                 ))}
                             </div>
                         </div>
 
+                        {/* Section 3: Chi tiết Nợ Bình theo khách */}
+                        <div>
+                            <h2 className="text-xl font-extrabold mb-8 pb-4 border-b-4 border-red-500 inline-block">Khách nợ bình</h2>
+                            <div className="space-y-2 text-zinc-800">
+                                {data.filter(d => (Number(d.quantity) - Number(d.emptyShellsReturned)) > 0).map(order => (
+                                    <div key={order.id} className="card-flat flex justify-between items-center bg-red-50/30 px-4 rounded-xl mb-2">
+                                        <div className="font-bold text-lg">{order.customerName}</div>
+                                        <div className="flex items-center gap-4">
+                                            <div className="text-right">
+                                                <p className="text-[10px] font-bold text-red-400 uppercase">Còn nợ</p>
+                                                <p className="text-2xl font-black text-red-600">
+                                                    {Number(order.quantity) - Number(order.emptyShellsReturned)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             );
