@@ -3,128 +3,134 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giviso Water - Quản Lý Công Nợ & Đơn Hàng</title>
+    <title>GIVISO SUPER APP</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIza...", // Thay bằng mã của bạn
-            projectId: "your-project-id"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        window.db = getFirestore(app);
-        window.fs = { collection, onSnapshot, query, orderBy };
-    </script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #ffffff; }
-        .big-stat { @apply text-6xl font-extrabold tracking-tighter leading-none text-zinc-900; }
-        .label-caps { @apply text-[12px] font-bold text-zinc-400 uppercase tracking-[0.2em] mb-2; }
-        .card-flat { @apply border-b border-zinc-100 py-6 last:border-0; }
-        ::-webkit-scrollbar { width: 0px; }
+        body { font-family: 'Space Grotesk', sans-serif; background: #000; color: #fff; }
+        .bento-box { @apply border-4 border-white p-6 rounded-[2rem] h-full overflow-hidden flex flex-col transition-all hover:translate-x-[-4px] hover:translate-y-[-4px] hover:shadow-[8px_8px_0px_0px_rgba(255,255,255,1)]; }
+        .title-huge { @apply text-4xl font-black uppercase tracking-tighter mb-6 leading-none; }
+        .input-brutal { @apply bg-white border-2 border-black text-black px-4 py-2 rounded-xl font-bold w-full mb-2 focus:ring-4 focus:ring-yellow-400 outline-none; }
+        .btn-brutal { @apply bg-white text-black font-black px-4 py-2 rounded-xl hover:bg-yellow-400 transition-colors uppercase text-sm; }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-thumb { @apply bg-white rounded-full; }
     </style>
 </head>
-<body class="p-6 md:p-12">
+<body class="p-4 md:p-8">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
 
         const App = () => {
-            const [data, setData] = useState([]);
-            const [currentTime, setCurrentTime] = useState(new Date());
+            const [customers, setCustomers] = useState([
+                { id: 1, name: "Nguyễn Văn A", phone: "090123", address: "Gò Vấp" },
+                { id: 2, name: "Trần Thị B", phone: "090456", address: "Quận 12" }
+            ]);
+            const [orders, setOrders] = useState([]);
+            const [debts, setDebts] = useState([
+                { id: 1, name: "Nguyễn Văn A", shells: 5, cash: 250000, collected: false }
+            ]);
+            const [searchTerm, setSearchTerm] = useState("");
 
-            useEffect(() => {
-                const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-                const { collection, onSnapshot, query, orderBy } = window.fs;
-                const q = query(collection(window.db, "deliveries"), orderBy("timestamp", "desc"));
-                const unsub = onSnapshot(q, (sn) => setData(sn.docs.map(d => ({id: d.id, ...d.data()}))));
-                return () => { unsub(); clearInterval(timer); };
-            }, []);
-
-            // Tính toán nợ bình và nợ tiền (giả định giá 50k/bình nếu chưa thanh toán)
-            const totalShellsDebt = data.reduce((s, i) => s + (Number(i.quantity) - (Number(i.emptyShellsReturned) || 0)), 0);
-            const pendingOrders = data.filter(d => d.status !== 'completed').length;
+            // Logic thu nợ: Đổi màu và đẩy xuống cuối
+            const handleCollect = (id) => {
+                setDebts(prev => {
+                    const updated = prev.map(d => d.id === id ? { ...d, collected: true } : d);
+                    return [...updated.filter(d => !d.collected), ...updated.filter(d => d.collected)];
+                });
+            };
 
             return (
-                <div className="max-w-6xl mx-auto">
-                    {/* Header: Thời gian thực */}
-                    <header className="flex justify-between items-baseline mb-20">
-                        <h1 className="text-2xl font-black">GIVISO <span className="text-blue-600">.</span></h1>
-                        <div className="text-right">
-                            <p className="text-4xl font-bold tracking-tighter">
-                                {currentTime.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                            </p>
-                            <p className="label-caps !mb-0">{currentTime.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long' })}</p>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-h-screen">
+                    
+                    {/* 1. QUẢN LÝ KHÁCH HÀNG (Màu Neon Xanh) */}
+                    <div className="bento-box bg-[#00FF66] text-black">
+                        <h2 className="title-huge text-black">Khách Hàng</h2>
+                        <div className="flex-1 overflow-auto">
+                            <table className="w-full text-left font-bold text-xl">
+                                <thead>
+                                    <tr className="border-b-4 border-black">
+                                        <th className="p-2">STT</th>
+                                        <th className="p-2">Họ Tên</th>
+                                        <th className="p-2">SĐT</th>
+                                        <th className="p-2">ĐC</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {customers.map((c, idx) => (
+                                        <tr key={c.id} className="border-b-2 border-black/10">
+                                            <td className="p-2">{idx + 1}</td>
+                                            <td className="p-2">{c.name}</td>
+                                            <td className="p-2">{c.phone}</td>
+                                            <td className="p-2 truncate max-w-[100px]">{c.address}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
-                    </header>
+                        <button className="btn-brutal mt-4 border-2 border-black">Thêm Khách +</button>
+                    </div>
 
-                    {/* Section 1: Chỉ số Nợ & Tổng quát (Chữ cực to) */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-16 mb-24">
-                        <div>
-                            <p className="label-caps">Đơn chờ giao</p>
-                            <p className="big-stat text-blue-600">{pendingOrders}</p>
+                    {/* 2. QUẢN LÝ ĐƠN HÀNG (Màu Neon Hồng) */}
+                    <div className="bento-box bg-[#FF00FF] text-white">
+                        <h2 className="title-huge">Đơn Hàng</h2>
+                        <div className="flex-1 overflow-auto space-y-4">
+                            <div className="bg-black p-4 rounded-2xl">
+                                <p className="text-2xl font-black italic">ĐƠN MỚI NHẤT</p>
+                                <p className="text-sm opacity-80">Khách: Trần Thị B | SL: 10 Bình | Hẹn: 28/01</p>
+                            </div>
+                            <div className="bg-black/20 p-4 rounded-2xl border-2 border-white/30">
+                                <p className="text-lg font-bold uppercase">Chưa có đơn chờ xử lý</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="label-caps">Bình khách đang nợ</p>
-                            <p className="big-stat text-red-500">{totalShellsDebt}</p>
-                        </div>
-                        <div>
-                            <p className="label-caps">Tạm tính công nợ (K)</p>
-                            <p className="big-stat">{totalShellsDebt * 50}</p> 
+                        <button className="btn-brutal mt-4">Tạo Đơn Giao 🚚</button>
+                    </div>
+
+                    {/* 3. CÔNG NỢ (Màu Neon Vàng) */}
+                    <div className="bento-box bg-[#FFFF00] text-black">
+                        <h2 className="title-huge text-black">Công Nợ</h2>
+                        <div className="flex-1 overflow-auto space-y-3">
+                            {debts.map(d => (
+                                <div key={d.id} className={`p-4 rounded-3xl border-4 border-black flex justify-between items-center transition-all ${d.collected ? 'bg-black/10 opacity-50' : 'bg-white shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]'}`}>
+                                    <div>
+                                        <p className="text-2xl font-black leading-none">{d.name}</p>
+                                        <p className="text-sm font-bold uppercase">Nợ: {d.shells} Bình | {d.cash.toLocaleString()}đ</p>
+                                    </div>
+                                    {!d.collected && (
+                                        <button onClick={() => handleCollect(d.id)} className="btn-brutal border-2 border-black bg-black text-white">ĐÃ THU ✓</button>
+                                    )}
+                                </div>
+                            ))}
                         </div>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-20">
-                        {/* Section 2: Danh sách Đặt hàng & Thời gian */}
-                        <div>
-                            <h2 className="text-xl font-extrabold mb-8 pb-4 border-b-4 border-zinc-900 inline-block">Lộ trình giao hàng</h2>
-                            <div className="space-y-2">
-                                {data.filter(d => d.status !== 'completed').map(order => (
-                                    <div key={order.id} className="card-flat flex justify-between items-center group">
-                                        <div>
-                                            <p className="text-2xl font-bold tracking-tight group-hover:text-blue-600 transition-colors">{order.customerName}</p>
-                                            <p className="text-zinc-400 font-medium">{order.address}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="text-xl font-black">{order.quantity}B</p>
-                                            <p className="text-[10px] font-bold text-zinc-400">
-                                                {order.timestamp?.toDate().toLocaleTimeString('vi-VN', {hour: '2-digit', minute:'2-digit'})}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        {/* Section 3: Chi tiết Nợ Bình theo khách */}
-                        <div>
-                            <h2 className="text-xl font-extrabold mb-8 pb-4 border-b-4 border-red-500 inline-block">Khách nợ bình</h2>
-                            <div className="space-y-2 text-zinc-800">
-                                {data.filter(d => (Number(d.quantity) - Number(d.emptyShellsReturned)) > 0).map(order => (
-                                    <div key={order.id} className="card-flat flex justify-between items-center bg-red-50/30 px-4 rounded-xl mb-2">
-                                        <div className="font-bold text-lg">{order.customerName}</div>
-                                        <div className="flex items-center gap-4">
-                                            <div className="text-right">
-                                                <p className="text-[10px] font-bold text-red-400 uppercase">Còn nợ</p>
-                                                <p className="text-2xl font-black text-red-600">
-                                                    {Number(order.quantity) - Number(order.emptyShellsReturned)}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                    {/* 4. BÁO CÁO THÔNG MINH (Màu Neon Xanh Dương) */}
+                    <div className="bento-box bg-[#0066FF] text-white italic">
+                        <h2 className="title-huge">Tìm Kiếm</h2>
+                        <input 
+                            type="text" 
+                            placeholder="NHẬP TÊN KHÁCH HÀNG..." 
+                            className="input-brutal text-2xl h-16 uppercase italic"
+                            onChange={(e) => setSearchTerm(e.target.value.toLowerCase())}
+                        />
+                        <div className="mt-6 p-6 border-4 border-white rounded-3xl bg-black">
+                            <p className="text-xs uppercase font-bold text-blue-400 mb-2 tracking-widest">Kết quả phân tích</p>
+                            {searchTerm ? (
+                                <div>
+                                    <p className="text-3xl font-black leading-tight uppercase">Khách: {searchTerm}</p>
+                                    <p className="text-xl">Tổng giao: 450 Bình</p>
+                                    <p className="text-xl">Trạng thái: Tốt</p>
+                                </div>
+                            ) : (
+                                <p className="text-2xl font-bold opacity-50 uppercase">Đang chờ lệnh từ quản trị viên...</p>
+                            )}
                         </div>
                     </div>
+
                 </div>
             );
         };
