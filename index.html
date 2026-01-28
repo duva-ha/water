@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÚ VINH OS | QUẢN LÝ CÔNG NỢ VỎ</title>
+    <title>PHÚ VINH OS | </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -26,9 +26,9 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useMemo } = React;
 
-        // --- MODULE KHÁCH HÀNG ---
+        // --- 1. MODULE KHÁCH HÀNG ---
         const CustomerModule = ({ customers, setCustomers, form, setForm, handleSaveCustomer }) => (
             <div className="max-w-7xl mx-auto px-6 py-12 fade-up">
                 <h1 className="text-6xl font-black italic mb-12 gold-text uppercase chinese-title">/ Hồ sơ khách hàng</h1>
@@ -44,14 +44,14 @@
                     {customers.map(c => (
                         <div key={c.id} className="luxury-panel p-6 flex justify-between items-center bg-white/5">
                             <div><h3 className="text-3xl font-black gold-text uppercase chinese-title">{c.name}</h3><p className="opacity-40">{c.phone}</p></div>
-                            <button onClick={() => {setForm(c); window.scrollTo(0,0)}} className="text-[#d4af37] font-black border-b border-[#d4af37] text-xs">SỬA</button>
+                            <button onClick={() => {setForm(c); window.scrollTo(0,0)}} className="text-[#d4af37] font-black border-b border-[#d4af37] text-xs uppercase">Sửa</button>
                         </div>
                     ))}
                 </div>
             </div>
         );
 
-        // --- MODULE ĐƠN HÀNG (CẬP NHẬT TÍNH NỢ VỎ) ---
+        // --- 2. MODULE ĐƠN HÀNG ---
         const OrderModule = ({ customers, orders, setOrders }) => {
             const [orderForm, setOrderForm] = useState({ customerId: '', qtyBinh: '', qtyLoc: '' });
             const [tempReturn, setTempReturn] = useState({});
@@ -60,14 +60,9 @@
                 if (!orderForm.customerId || (!orderForm.qtyBinh && !orderForm.qtyLoc)) return alert("VUI LÒNG CHỌN KHÁCH VÀ NHẬP HÀNG!");
                 const customer = customers.find(c => c.id === parseInt(orderForm.customerId));
                 const newOrder = { 
-                    ...orderForm, 
-                    id: Date.now(), 
-                    customerName: customer.name, 
-                    date: new Date().toLocaleString('vi-VN'), 
-                    qtyBinh: parseInt(orderForm.qtyBinh || 0),
-                    qtyLoc: parseInt(orderForm.qtyLoc || 0),
-                    returnBins: 0, 
-                    isCompleted: false 
+                    ...orderForm, id: Date.now(), customerName: customer.name, date: new Date().toLocaleString('vi-VN'), 
+                    qtyBinh: parseInt(orderForm.qtyBinh || 0), qtyLoc: parseInt(orderForm.qtyLoc || 0), 
+                    returnBins: 0, isCompleted: false, debtBins: 0 
                 };
                 setOrders([newOrder, ...orders]);
                 setOrderForm({ customerId: '', qtyBinh: '', qtyLoc: '' });
@@ -75,19 +70,13 @@
 
             const confirmDelivery = (id) => {
                 const returnVal = parseInt(tempReturn[id] || 0);
-                setOrders(orders.map(o => {
-                    if (o.id === id) {
-                        const debt = o.qtyBinh - returnVal; // Tính toán nợ: Bình giao - Vỏ thu
-                        return { ...o, isCompleted: true, returnBins: returnVal, debtBins: debt };
-                    }
-                    return o;
-                }));
+                setOrders(orders.map(o => o.id === id ? { ...o, isCompleted: true, returnBins: returnVal, debtBins: o.qtyBinh - returnVal } : o));
             };
 
             return (
                 <div className="max-w-7xl mx-auto px-6 py-12 fade-up">
                     <h1 className="text-6xl font-black italic mb-12 gold-text uppercase chinese-title">/ Quản lý đơn hàng</h1>
-                    <div className="luxury-panel p-8 mb-16">
+                    <div className="luxury-panel p-8 mb-16 text-black">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                             <select className="input-pro" value={orderForm.customerId} onChange={e => setOrderForm({...orderForm, customerId: e.target.value})}>
                                 <option value="">--- CHỌN KHÁCH HÀNG ---</option>
@@ -100,38 +89,25 @@
                         </div>
                         <button onClick={handleAddOrder} className="h-20 w-full bg-[#d4af37] text-black font-black text-2xl uppercase rounded-xl">XÁC NHẬN ĐƠN HÀNG +</button>
                     </div>
-
-                    <div className="space-y-6">
-                        <p className="text-white/20 font-black uppercase text-xs tracking-[0.3em] mb-4 border-b border-white/10 pb-2">Theo dõi đơn hàng</p>
+                    <div className="space-y-4">
                         {orders.map(o => (
-                            <div key={o.id} className="luxury-panel p-6 flex flex-col md:flex-row justify-between items-center bg-white/5 gap-6">
-                                <div className="flex-1">
-                                    <h3 className="text-3xl font-black gold-text uppercase chinese-title mb-1">{o.customerName}</h3>
-                                    <p className="text-sm italic text-zinc-500">{o.date} | Giao: {o.qtyBinh}B • {o.qtyLoc}L</p>
-                                    
+                            <div key={o.id} className="luxury-panel p-6 flex flex-col md:flex-row justify-between items-center bg-white/5 gap-4">
+                                <div>
+                                    <h3 className="text-3xl font-black gold-text uppercase chinese-title">{o.customerName}</h3>
+                                    <p className="text-sm italic opacity-50">{o.date} | Giao: {o.qtyBinh}B • {o.qtyLoc}L</p>
                                     {o.isCompleted && (
-                                        <div className="mt-2 flex items-center gap-2 font-black text-xs uppercase">
-                                            <span className="text-green-400">✓ Đã thu {o.returnBins} vỏ, </span>
-                                            {o.debtBins <= 0 ? (
-                                                <span className="text-green-400 italic">Nợ 0 vỏ</span>
-                                            ) : (
-                                                <span className="text-red-500 italic">Nợ {o.debtBins} vỏ</span>
-                                            )}
-                                        </div>
+                                        <p className="font-black text-xs uppercase mt-2">
+                                            <span className="text-green-400 italic">Đã thu {o.returnBins} vỏ, </span>
+                                            <span className={o.debtBins > 0 ? 'text-red-500 italic' : 'text-green-400 italic'}>Nợ {o.debtBins} vỏ</span>
+                                        </p>
                                     )}
                                 </div>
-
                                 {!o.isCompleted ? (
-                                    <div className="flex items-center gap-4 w-full md:w-auto">
-                                        <div className="flex flex-col items-center">
-                                            <span className="text-[10px] font-black text-[#d4af37] mb-1 uppercase tracking-tighter">Thu vỏ</span>
-                                            <input className="input-pro !h-12 !w-20 text-center !text-base" type="number" placeholder="0" value={tempReturn[o.id] || ''} onChange={(e) => setTempReturn({...tempReturn, [o.id]: e.target.value})} />
-                                        </div>
-                                        <button onClick={() => confirmDelivery(o.id)} className="flex-1 md:flex-none bg-red-600/20 text-red-500 border border-red-500/40 px-6 h-12 rounded-xl font-black text-[10px] uppercase hover:bg-red-600 hover:text-white transition-all">Xác nhận giao hàng</button>
+                                    <div className="flex gap-4">
+                                        <input className="input-pro !h-12 !w-20 text-center !text-base" type="number" placeholder="Vỏ" onChange={(e) => setTempReturn({...tempReturn, [o.id]: e.target.value})} />
+                                        <button onClick={() => confirmDelivery(o.id)} className="bg-red-600/20 text-red-500 border border-red-500/40 px-6 rounded-xl font-black text-[10px] uppercase">Xác nhận giao</button>
                                     </div>
-                                ) : (
-                                    <div className="bg-green-600/20 text-green-400 border border-green-500/40 px-10 py-4 rounded-xl font-black text-[10px] uppercase">Thành công</div>
-                                )}
+                                ) : <div className="text-green-400 font-black uppercase text-xs">Thành công ✓</div>}
                             </div>
                         ))}
                     </div>
@@ -139,7 +115,56 @@
             );
         };
 
-        // --- APP CHÍNH ---
+        // --- 3. MODULE BÁO CÁO (TỔNG KẾT ĐẠI CÁT) ---
+        const ReportModule = ({ orders }) => {
+            const summary = useMemo(() => {
+                return orders.reduce((acc, curr) => {
+                    if (curr.isCompleted) {
+                        acc.totalBinh += curr.qtyBinh;
+                        acc.totalLoc += curr.qtyLoc;
+                        acc.totalReturn += curr.returnBins;
+                        acc.done++;
+                    } else {
+                        acc.pending++;
+                    }
+                    return acc;
+                }, { totalBinh: 0, totalLoc: 0, totalReturn: 0, done: 0, pending: 0 });
+            }, [orders]);
+
+            return (
+                <div className="max-w-7xl mx-auto px-6 py-12 fade-up">
+                    <h1 className="text-6xl font-black italic mb-12 gold-text uppercase chinese-title">/ Tổng kết đại cát</h1>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                        <div className="luxury-panel p-10 flex flex-col items-center">
+                            <p className="text-xs font-black opacity-40 uppercase tracking-[0.3em] mb-4">Lộc Bình (Giao)</p>
+                            <p className="text-8xl font-black gold-text chinese-title">{summary.totalBinh}</p>
+                        </div>
+                        <div className="luxury-panel p-10 flex flex-col items-center">
+                            <p className="text-xs font-black opacity-40 uppercase tracking-[0.3em] mb-4">Lộc Lốc (Giao)</p>
+                            <p className="text-8xl font-black gold-text chinese-title">{summary.totalLoc}</p>
+                        </div>
+                        <div className="luxury-panel p-10 flex flex-col items-center bg-white/5 border-none">
+                            <p className="text-xs font-black opacity-40 uppercase tracking-[0.3em] mb-4">Hồi Vỏ (Thu)</p>
+                            <p className="text-8xl font-black text-green-400 chinese-title">{summary.totalReturn}</p>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="luxury-panel p-8 border-l-green-500">
+                            <h4 className="text-green-400 font-black uppercase text-sm mb-2">Vận hành thông suốt</h4>
+                            <p className="text-4xl font-black uppercase chinese-title">{summary.done} Đơn hoàn thành</p>
+                        </div>
+                        <div className="luxury-panel p-8 border-l-red-600">
+                            <h4 className="text-red-500 font-black uppercase text-sm mb-2">Đang chờ xử lý</h4>
+                            <p className="text-4xl font-black uppercase chinese-title">{summary.pending} Đơn chưa giao</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- 4. APP CHÍNH ---
         const App = () => {
             const [view, setView] = useState('menu');
             const [customers, setCustomers] = useState([{ id: 1, name: "NGUYỄN PHÚ VINH", phone: "0901.888.999", note: "Quận 1" }]);
@@ -160,7 +185,7 @@
                 <div className="min-h-screen pb-48">
                     {view === 'menu' && (
                         <div className="max-w-7xl mx-auto px-8 py-20 fade-up">
-                            <h1 className="text-7xl md:text-[9rem] font-black gold-text uppercase leading-none mb-20 chinese-title">PHÚ VINH<br/><span className="text-white/5 italic">CLASSIC</span></h1>
+                            <h1 className="text-7xl md:text-[9rem] font-black gold-text uppercase leading-none mb-20 chinese-title text-center md:text-left">PHÚ VINH<br/><span className="text-white/5 italic">CLASSIC</span></h1>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {['customers', 'orders', 'debts', 'reports'].map(v => (
                                     <div key={v} onClick={() => setView(v)} className="luxury-panel p-10 cursor-pointer uppercase font-black chinese-title text-4xl hover:gold-text transition-all text-center">
@@ -172,7 +197,7 @@
                     )}
                     {view === 'customers' && <CustomerModule customers={customers} setCustomers={setCustomers} form={customerForm} setForm={setCustomerForm} handleSaveCustomer={handleSaveCustomer} />}
                     {view === 'orders' && <OrderModule customers={customers} orders={orders} setOrders={setOrders} />}
-                    {['debts', 'reports'].includes(view) && <div className="p-24 text-center opacity-20 text-4xl chinese-title uppercase italic">Đang xây dựng...</div>}
+                    {view === 'reports' && <ReportModule orders={orders} />}
                     
                     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[95%] max-w-4xl z-50">
                         <nav className="nav-capsule flex justify-around items-center">
@@ -186,7 +211,6 @@
                 </div>
             );
         };
-
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
