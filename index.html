@@ -3,20 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CSSX PHÚ VINH - Quản Lý Tổng Hợp</title>
+    <title>PHÚ VINH OS - Premium Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Space Grotesk', sans-serif; background: #fdfdfd; touch-action: manipulation; }
-        .responsive-container { @apply w-[98%] max-w-[1400px] mx-auto pt-4 pb-32; }
-        .huge-input { @apply h-[100px] text-4xl md:text-5xl font-black uppercase rounded-[2rem] border-[5px] border-black px-8 w-full outline-none focus:ring-8 focus:ring-yellow-400 transition-all bg-white tracking-tighter; }
-        .huge-btn { @apply h-[100px] w-full bg-black text-[#ccff00] rounded-[2rem] font-black text-3xl uppercase shadow-[10px_10px_0px_0px_rgba(0,0,0,0.2)] active:scale-95 transition-all flex items-center justify-center; }
-        .card-bento { @apply bg-white border-[5px] border-black p-8 rounded-[3rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all; }
-        .fade-in { animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        :root { --neon-green: #ccff00; --neon-blue: #00ffff; --neon-pink: #ff00ff; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #0a0a0a; color: #fff; overflow-x: hidden; }
+        
+        .bento-card { 
+            @apply relative overflow-hidden border-[3px] border-white/10 rounded-[2.5rem] p-8 transition-all duration-300;
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+        }
+        .bento-card:active { transform: scale(0.97); }
+        .bento-card::after {
+            content: ''; @apply absolute inset-0 opacity-0 transition-opacity duration-300;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.05), transparent);
+        }
+        .bento-card:hover::after { @apply opacity-100; }
+
+        .huge-input-field {
+            @apply h-[110px] bg-transparent border-b-[6px] border-white/20 text-5xl md:text-7xl font-black outline-none transition-all duration-500 w-full mb-8;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+        .huge-input-field:focus { @apply border-[#ccff00] text-[#ccff00]; }
+
+        .btn-action {
+            @apply h-[100px] rounded-full bg-[#ccff00] text-black font-black text-3xl uppercase tracking-tighter flex items-center justify-center gap-4 transition-all active:scale-90;
+            box-shadow: 0 0 30px rgba(204, 255, 0, 0.3);
+        }
+
+        .fade-in { animation: fadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .text-glow { text-shadow: 0 0 20px rgba(255,255,255,0.3); }
     </style>
 </head>
 <body>
@@ -27,104 +50,102 @@
 
         const App = () => {
             const [view, setView] = useState('menu');
-            // Dữ liệu mẫu (Sau này sẽ kết nối Firebase)
             const [customers, setCustomers] = useState([
-                { id: 1, name: "NGUYỄN VĂN A", phone: "090123", debtBins: 10 },
-                { id: 2, name: "TRẦN THỊ B", phone: "098888", debtBins: 5 }
+                { id: 1, name: "TRẦN HÙNG DŨNG", phone: "0909.123.456", debt: 15 },
+                { id: 2, name: "HOÀNG NAM ANH", phone: "0912.000.888", debt: 8 }
             ]);
 
-            const PRICE_PER_BIN = 50000; // Giá cọc bình giả định
+            // --- TRANG CHỦ ---
+            const MainMenu = () => (
+                <div className="fade-in max-w-5xl mx-auto px-6 pt-16 pb-32">
+                    <header className="mb-20">
+                        <p className="text-[#ccff00] font-bold tracking-[0.3em] uppercase mb-4">Hệ Thống Quản Trị</p>
+                        <h1 className="text-8xl md:text-9xl font-black italic leading-[0.8] tracking-tighter uppercase text-glow">
+                            CSSX<br/><span className="text-white/20">PHÚ VINH</span>
+                        </h1>
+                    </header>
 
-            // --- 1. MODULE CÔNG NỢ ---
-            const DebtModule = () => (
-                <div className="fade-in responsive-container">
-                    <h1 className="text-5xl md:text-7xl font-black mb-10 italic border-b-[15px] border-[#00ffff] inline-block uppercase tracking-tighter">CÔNG NỢ /</h1>
-                    <div className="space-y-6 px-4">
-                        {customers.map(c => (
-                            <div key={c.id} className="card-bento flex flex-col md:flex-row justify-between items-center gap-4">
-                                <div>
-                                    <p className="text-5xl font-black uppercase italic tracking-tighter">{c.name}</p>
-                                    <p className="text-2xl text-zinc-400 font-bold">{c.phone}</p>
-                                </div>
-                                <div className="text-right bg-black text-[#00ffff] p-6 rounded-2xl w-full md:w-auto">
-                                    <p className="text-xl font-bold uppercase">Nợ: {c.debtBins} Bình</p>
-                                    <p className="text-4xl font-black">{(c.debtBins * PRICE_PER_BIN).toLocaleString()}đ</p>
-                                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div onClick={() => setView('customers')} className="bento-card group cursor-pointer border-[#ccff00]/30 hover:border-[#ccff00]">
+                            <div className="flex justify-between items-start mb-12">
+                                <span className="text-6xl group-hover:rotate-12 transition-transform">👥</span>
+                                <span className="bg-[#ccff00] text-black px-4 py-1 rounded-full text-sm font-black italic">ACTIVE</span>
                             </div>
-                        ))}
+                            <h2 className="text-5xl font-black uppercase italic leading-none tracking-tighter">Khách<br/>Hàng</h2>
+                        </div>
+
+                        <div onClick={() => setView('debts')} className="bento-card group cursor-pointer border-[#00ffff]/30 hover:border-[#00ffff]">
+                            <div className="flex justify-between items-start mb-12">
+                                <span className="text-6xl group-hover:rotate-12 transition-transform">💰</span>
+                                <span className="bg-[#00ffff] text-black px-4 py-1 rounded-full text-sm font-black italic">UPDATE</span>
+                            </div>
+                            <h2 className="text-5xl font-black uppercase italic leading-none tracking-tighter">Công<br/>Nợ</h2>
+                        </div>
+
+                        <div onClick={() => setView('reports')} className="bento-card md:col-span-2 group cursor-pointer border-white/10 hover:border-white">
+                            <div className="flex justify-between items-center">
+                                <h2 className="text-5xl font-black uppercase italic tracking-tighter leading-none">Báo Cáo<br/>Tổng Hợp</h2>
+                                <span className="text-8xl opacity-20 group-hover:opacity-100 transition-opacity font-black italic tracking-tighter">88%</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             );
 
-            // --- 2. MODULE BÁO CÁO TỔNG HỢP ---
-            const ReportModule = () => {
-                const totalBins = customers.reduce((sum, c) => sum + c.debtBins, 0);
-                const totalCash = totalBins * PRICE_PER_BIN;
-
+            // --- MODULE KHÁCH HÀNG ---
+            const CustomerModule = () => {
+                const [form, setForm] = useState({ name: '', phone: '' });
                 return (
-                    <div className="fade-in responsive-container px-4">
-                        <h1 className="text-5xl md:text-7xl font-black mb-10 italic border-b-[15px] border-zinc-300 inline-block uppercase tracking-tighter">BÁO CÁO /</h1>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                            <div className="card-bento bg-black text-[#ccff00]">
-                                <p className="text-2xl font-bold uppercase italic">Tổng Nợ Bình Toàn Hệ Thống</p>
-                                <p className="text-8xl md:text-9xl font-black tracking-tighter">{totalBins}</p>
-                            </div>
-                            <div className="card-bento bg-blue-600 text-white">
-                                <p className="text-2xl font-bold uppercase italic">Tổng Tiền Nợ Dự Tính</p>
-                                <p className="text-6xl md:text-8xl font-black tracking-tighter">{totalCash.toLocaleString()}đ</p>
-                            </div>
+                    <div className="fade-in max-w-6xl mx-auto px-6 pt-12">
+                        <h1 className="text-6xl font-black italic mb-16 tracking-tighter uppercase text-[#ccff00]">/ Khách Hàng</h1>
+                        
+                        <div className="mb-24">
+                            <input 
+                                className="huge-input-field" 
+                                placeholder="TÊN KHÁCH HÀNG..." 
+                                value={form.name} 
+                                onChange={e => setForm({...form, name: e.target.value.toUpperCase()})}
+                            />
+                            <input 
+                                className="huge-input-field" 
+                                placeholder="SỐ ĐIỆN THOẠI..." 
+                                type="tel"
+                                value={form.phone} 
+                                onChange={e => setForm({...form, phone: e.target.value})}
+                            />
+                            <button className="btn-action w-full mt-8">
+                                XÁC NHẬN LƯU +
+                            </button>
                         </div>
-                        <div className="card-bento border-dashed border-zinc-300 shadow-none">
-                            <h3 className="text-3xl font-black mb-4 uppercase">Phân tích nhanh</h3>
-                            <p className="text-xl text-zinc-500 italic">Hệ thống đang quản lý {customers.length} khách hàng có phát sinh nợ.</p>
+
+                        <div className="grid gap-4">
+                            {customers.map(c => (
+                                <div key={c.id} className="bento-card flex justify-between items-center py-6 bg-white/5 border-none shadow-xl">
+                                    <div>
+                                        <p className="text-4xl font-black tracking-tighter italic uppercase leading-none mb-2">{c.name}</p>
+                                        <p className="text-xl text-white/40 font-bold tracking-widest">{c.phone}</p>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="text-3xl font-black text-[#ccff00] leading-none">{c.debt} BÌNH</p>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     </div>
                 );
             };
 
-            // --- MENU CHÍNH ---
-            const MainMenu = () => (
-                <div className="fade-in responsive-container px-4">
-                    <h1 className="text-7xl md:text-9xl font-extrabold italic tracking-tighter leading-none mb-12 uppercase">
-                        CSSX<br/><span className="text-blue-600 underline">PHÚ VINH</span>
-                    </h1>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div onClick={() => setView('customers')} className="card-bento bg-[#ccff00] cursor-pointer active:scale-95">
-                            <span className="text-7xl mb-4 block">👥</span>
-                            <h2 className="text-5xl font-black uppercase italic">Khách Hàng</h2>
-                        </div>
-                        <div className="card-bento bg-[#ff00ff] text-white opacity-50 cursor-not-allowed">
-                            <span className="text-7xl mb-4 block">📦</span>
-                            <h2 className="text-5xl font-black uppercase italic">Đơn Hàng</h2>
-                        </div>
-                        <div onClick={() => setView('debts')} className="card-bento bg-[#00ffff] cursor-pointer active:scale-95">
-                            <span className="text-7xl mb-4 block">💰</span>
-                            <h2 className="text-5xl font-black uppercase italic">Công Nợ</h2>
-                        </div>
-                        <div onClick={() => setView('reports')} className="card-bento bg-white border-dashed cursor-pointer active:scale-95">
-                            <span className="text-7xl mb-4 block">📊</span>
-                            <h2 className="text-5xl font-black uppercase italic">Báo Cáo</h2>
-                        </div>
-                    </div>
-                </div>
-            );
-
             return (
                 <div className="min-h-screen">
                     {view === 'menu' && <MainMenu />}
-                    {view === 'customers' && (
-                        <div className="fade-in responsive-container">
-                            <h1 className="text-5xl md:text-7xl font-black mb-10 italic border-b-[15px] border-[#ccff00] inline-block uppercase ml-4">KHÁCH HÀNG /</h1>
-                            {/* ... Phần nhập liệu khách hàng ... */}
-                            <p className="p-10 text-xl italic text-zinc-400">Giao diện khách hàng đã sẵn sàng.</p>
-                        </div>
-                    )}
-                    {view === 'debts' && <DebtModule />}
-                    {view === 'reports' && <ReportModule />}
-
+                    {view === 'customers' && <CustomerModule />}
+                    
                     {view !== 'menu' && (
-                        <button onClick={() => setView('menu')} className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black text-white font-black px-12 py-5 rounded-full border-4 border-black z-50 text-xl uppercase shadow-2xl active:scale-90 transition-all">
-                            ⬅ Quay Lại Menu
+                        <button 
+                            onClick={() => setView('menu')}
+                            className="fixed bottom-10 left-1/2 -translate-x-1/2 bg-white text-black font-black px-12 py-6 rounded-full text-xl z-50 shadow-[0_20px_50px_rgba(255,255,255,0.2)] active:scale-90 transition-all uppercase italic"
+                        >
+                            ← Menu Chính
                         </button>
                     )}
                 </div>
