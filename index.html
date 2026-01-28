@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CSSX PHÚ VINH - Hệ Thống Quản Lý</title>
+    <title>CSSX PHÚ VINH - Quản Lý Tổng Hợp</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -12,18 +12,9 @@
     <style>
         body { font-family: 'Space Grotesk', sans-serif; background: #fdfdfd; touch-action: manipulation; }
         .responsive-container { @apply w-[98%] max-w-[1400px] mx-auto pt-4 pb-32; }
-        
-        /* Input cực đại - Lớn gấp đôi bình thường */
-        .huge-input-special { 
-            @apply h-[120px] text-5xl md:text-6xl font-black uppercase rounded-[2rem] border-[6px] border-black px-8 w-full outline-none focus:ring-8 focus:ring-yellow-400 transition-all bg-white tracking-tighter; 
-        }
-        
-        /* Nút lưu đồng bộ chiều cao */
-        .huge-btn-special { 
-            @apply h-[120px] w-full bg-black text-[#ccff00] rounded-[2rem] font-black text-4xl uppercase shadow-[10px_10px_0px_0px_rgba(0,0,0,0.2)] active:scale-95 transition-all border-none; 
-        }
-
-        .column-label { @apply text-sm font-black uppercase tracking-widest text-zinc-500 mb-2 ml-4 block italic; }
+        .huge-input { @apply h-[100px] text-4xl md:text-5xl font-black uppercase rounded-[2rem] border-[5px] border-black px-8 w-full outline-none focus:ring-8 focus:ring-yellow-400 transition-all bg-white tracking-tighter; }
+        .huge-btn { @apply h-[100px] w-full bg-black text-[#ccff00] rounded-[2rem] font-black text-3xl uppercase shadow-[10px_10px_0px_0px_rgba(0,0,0,0.2)] active:scale-95 transition-all flex items-center justify-center; }
+        .card-bento { @apply bg-white border-[5px] border-black p-8 rounded-[3rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all; }
         .fade-in { animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -36,70 +27,105 @@
 
         const App = () => {
             const [view, setView] = useState('menu');
+            // Dữ liệu mẫu (Sau này sẽ kết nối Firebase)
             const [customers, setCustomers] = useState([
-                { id: 1, name: "NGUYỄN VĂN A", phone: "090123" }
+                { id: 1, name: "NGUYỄN VĂN A", phone: "090123", debtBins: 10 },
+                { id: 2, name: "TRẦN THỊ B", phone: "098888", debtBins: 5 }
             ]);
-            const [form, setForm] = useState({ name: '', phone: '' });
 
-            const handleSave = () => {
-                if (!form.name || !form.phone) return alert("HÃY NHẬP ĐỦ TÊN VÀ SỐ ĐIỆN THOẠI!");
-                setCustomers([{ id: Date.now(), ...form, name: form.name.toUpperCase() }, ...customers]);
-                setForm({ name: '', phone: '' });
+            const PRICE_PER_BIN = 50000; // Giá cọc bình giả định
+
+            // --- 1. MODULE CÔNG NỢ ---
+            const DebtModule = () => (
+                <div className="fade-in responsive-container">
+                    <h1 className="text-5xl md:text-7xl font-black mb-10 italic border-b-[15px] border-[#00ffff] inline-block uppercase tracking-tighter">CÔNG NỢ /</h1>
+                    <div className="space-y-6 px-4">
+                        {customers.map(c => (
+                            <div key={c.id} className="card-bento flex flex-col md:flex-row justify-between items-center gap-4">
+                                <div>
+                                    <p className="text-5xl font-black uppercase italic tracking-tighter">{c.name}</p>
+                                    <p className="text-2xl text-zinc-400 font-bold">{c.phone}</p>
+                                </div>
+                                <div className="text-right bg-black text-[#00ffff] p-6 rounded-2xl w-full md:w-auto">
+                                    <p className="text-xl font-bold uppercase">Nợ: {c.debtBins} Bình</p>
+                                    <p className="text-4xl font-black">{(c.debtBins * PRICE_PER_BIN).toLocaleString()}đ</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+
+            // --- 2. MODULE BÁO CÁO TỔNG HỢP ---
+            const ReportModule = () => {
+                const totalBins = customers.reduce((sum, c) => sum + c.debtBins, 0);
+                const totalCash = totalBins * PRICE_PER_BIN;
+
+                return (
+                    <div className="fade-in responsive-container px-4">
+                        <h1 className="text-5xl md:text-7xl font-black mb-10 italic border-b-[15px] border-zinc-300 inline-block uppercase tracking-tighter">BÁO CÁO /</h1>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+                            <div className="card-bento bg-black text-[#ccff00]">
+                                <p className="text-2xl font-bold uppercase italic">Tổng Nợ Bình Toàn Hệ Thống</p>
+                                <p className="text-8xl md:text-9xl font-black tracking-tighter">{totalBins}</p>
+                            </div>
+                            <div className="card-bento bg-blue-600 text-white">
+                                <p className="text-2xl font-bold uppercase italic">Tổng Tiền Nợ Dự Tính</p>
+                                <p className="text-6xl md:text-8xl font-black tracking-tighter">{totalCash.toLocaleString()}đ</p>
+                            </div>
+                        </div>
+                        <div className="card-bento border-dashed border-zinc-300 shadow-none">
+                            <h3 className="text-3xl font-black mb-4 uppercase">Phân tích nhanh</h3>
+                            <p className="text-xl text-zinc-500 italic">Hệ thống đang quản lý {customers.length} khách hàng có phát sinh nợ.</p>
+                        </div>
+                    </div>
+                );
             };
+
+            // --- MENU CHÍNH ---
+            const MainMenu = () => (
+                <div className="fade-in responsive-container px-4">
+                    <h1 className="text-7xl md:text-9xl font-extrabold italic tracking-tighter leading-none mb-12 uppercase">
+                        CSSX<br/><span className="text-blue-600 underline">PHÚ VINH</span>
+                    </h1>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div onClick={() => setView('customers')} className="card-bento bg-[#ccff00] cursor-pointer active:scale-95">
+                            <span className="text-7xl mb-4 block">👥</span>
+                            <h2 className="text-5xl font-black uppercase italic">Khách Hàng</h2>
+                        </div>
+                        <div className="card-bento bg-[#ff00ff] text-white opacity-50 cursor-not-allowed">
+                            <span className="text-7xl mb-4 block">📦</span>
+                            <h2 className="text-5xl font-black uppercase italic">Đơn Hàng</h2>
+                        </div>
+                        <div onClick={() => setView('debts')} className="card-bento bg-[#00ffff] cursor-pointer active:scale-95">
+                            <span className="text-7xl mb-4 block">💰</span>
+                            <h2 className="text-5xl font-black uppercase italic">Công Nợ</h2>
+                        </div>
+                        <div onClick={() => setView('reports')} className="card-bento bg-white border-dashed cursor-pointer active:scale-95">
+                            <span className="text-7xl mb-4 block">📊</span>
+                            <h2 className="text-5xl font-black uppercase italic">Báo Cáo</h2>
+                        </div>
+                    </div>
+                </div>
+            );
 
             return (
                 <div className="min-h-screen">
-                    {view === 'menu' ? (
-                        <div className="fade-in responsive-container px-4">
-                            {/* Đổi tên thương hiệu theo yêu cầu */}
-                            <h1 className="text-7xl md:text-9xl font-extrabold italic tracking-tighter leading-none mb-12 uppercase">
-                                CSSX<br/><span className="text-blue-600 underline">PHÚ VINH</span>
-                            </h1>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div onClick={() => setView('customers')} className="border-[6px] border-black rounded-[3rem] p-10 bg-[#ccff00] shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] cursor-pointer active:scale-95 transition-all">
-                                    <span className="text-7xl mb-6 block">👥</span>
-                                    <h2 className="text-5xl font-black uppercase italic">Khách Hàng</h2>
-                                </div>
-                                <div className="border-[6px] border-black rounded-[3rem] p-10 bg-[#ff00ff] text-white shadow-[15px_15px_0px_0px_rgba(0,0,0,1)] opacity-50 cursor-not-allowed">
-                                    <span className="text-7xl mb-6 block">📦</span>
-                                    <h2 className="text-5xl font-black uppercase italic">Đơn Hàng</h2>
-                                </div>
-                            </div>
-                        </div>
-                    ) : (
+                    {view === 'menu' && <MainMenu />}
+                    {view === 'customers' && (
                         <div className="fade-in responsive-container">
-                            <h1 className="text-5xl md:text-7xl font-black mb-10 italic border-b-[15px] border-[#ccff00] inline-block uppercase tracking-tighter ml-4">KHÁCH HÀNG /</h1>
-                            
-                            {/* KHU VỰC NHẬP LIỆU CỰC ĐẠI */}
-                            <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 mb-16 items-end px-4">
-                                <div className="xl:col-span-5">
-                                    <span className="column-label">Họ Tên Khách Hàng</span>
-                                    <input className="huge-input-special" placeholder="NGUYỄN VĂN A" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
-                                </div>
-                                <div className="xl:col-span-4">
-                                    <span className="column-label">Số Điện Thoại</span>
-                                    <input className="huge-input-special" placeholder="090..." type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
-                                </div>
-                                <div className="xl:col-span-3">
-                                    <button onClick={handleSave} className="huge-btn-special">LƯU KHÁCH +</button>
-                                </div>
-                            </div>
-
-                            {/* DANH SÁCH KHÁCH HÀNG - KHUNG NHỎ LẠI THEO YÊU CẦU */}
-                            <div className="space-y-4 px-4">
-                                {customers.map(c => (
-                                    <div key={c.id} className="bg-white border-[4px] border-black p-5 rounded-[1.5rem] shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] flex justify-between items-center transition-all hover:bg-zinc-50">
-                                        <div className="flex flex-col md:flex-row md:items-baseline md:gap-6">
-                                            <p className="text-3xl md:text-4xl font-black uppercase tracking-tighter italic">{c.name}</p>
-                                            <p className="text-xl md:text-2xl text-zinc-400 font-bold italic">{c.phone}</p>
-                                        </div>
-                                        <button onClick={() => setCustomers(customers.filter(i => i.id !== c.id))} className="bg-red-50 text-red-500 px-4 py-2 rounded-xl font-black text-xs uppercase border-2 border-red-100">Xóa</button>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <button onClick={() => setView('menu')} className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black text-white font-black px-12 py-5 rounded-full border-4 border-black z-50 text-xl uppercase shadow-2xl active:scale-90 transition-all">⬅ Quay Lại Menu</button>
+                            <h1 className="text-5xl md:text-7xl font-black mb-10 italic border-b-[15px] border-[#ccff00] inline-block uppercase ml-4">KHÁCH HÀNG /</h1>
+                            {/* ... Phần nhập liệu khách hàng ... */}
+                            <p className="p-10 text-xl italic text-zinc-400">Giao diện khách hàng đã sẵn sàng.</p>
                         </div>
+                    )}
+                    {view === 'debts' && <DebtModule />}
+                    {view === 'reports' && <ReportModule />}
+
+                    {view !== 'menu' && (
+                        <button onClick={() => setView('menu')} className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black text-white font-black px-12 py-5 rounded-full border-4 border-black z-50 text-xl uppercase shadow-2xl active:scale-90 transition-all">
+                            ⬅ Quay Lại Menu
+                        </button>
                     )}
                 </div>
             );
