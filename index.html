@@ -3,56 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÚ VINH OS | CLASSIC LUXURY</title>
+    <title>PHÚ VINH OS | FIXED SYSTEM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #d4af37; --red: #991b1b; }
-        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #fef3c7; overflow-x: hidden; }
+        :root { --gold: #d4af37; }
+        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #fef3c7; }
         
+        /* ÉP CHỮ ĐEN TUYỆT ĐỐI CHO Ô NHẬP LIỆU */
+        .input-pro {
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            font-weight: 900 !important;
+            height: 64px;
+            padding: 0 24px;
+            border-radius: 12px;
+            width: 100%;
+            font-size: 1.25rem;
+            border: none;
+            outline: none;
+        }
+        .input-pro:focus { box-shadow: 0 0 0 4px var(--gold); }
+
         .luxury-panel {
             background: linear-gradient(145deg, rgba(153, 27, 27, 0.05), rgba(0, 0, 0, 0.6));
             border: 1px solid rgba(212, 175, 55, 0.2);
             border-left: 5px solid var(--gold);
             backdrop-filter: blur(10px);
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-
         .gold-text {
             background: linear-gradient(180deg, #fde68a 0%, #d4af37 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-
-        /* Ô NHẬP LIỆU: NỀN TRẮNG - CHỮ ĐEN */
-        .input-professional {
-            @apply bg-white text-black font-bold h-16 px-6 rounded-xl border-none outline-none focus:ring-4 focus:ring-[#d4af37] transition-all text-xl placeholder-zinc-400;
-        }
-
-        /* THANH ĐIỀU HƯỚNG CỐ ĐỊNH */
-        .nav-capsule { 
-            background: rgba(10, 10, 10, 0.95); 
-            border: 1px solid rgba(212, 175, 55, 0.3); 
-            border-radius: 999px; 
-            padding: 6px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-        }
-
-        /* HIỆU ỨNG PHÁT SÁNG KHI ĐƯỢC CHỌN */
-        .nav-btn {
-            @apply px-4 md:px-8 py-3 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest transition-all duration-300;
-        }
+        .nav-capsule { background: rgba(10, 10, 10, 0.95); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 999px; padding: 6px; }
         .nav-active { 
-            @apply bg-[#d4af37] text-black;
-            box-shadow: 0 0 25px rgba(212, 175, 55, 0.7); /* Phát sáng rực rỡ */
-            transform: scale(1.05);
+            background-color: var(--gold); color: #000; 
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.7); /* PHÁT SÁNG */
         }
-        .nav-inactive { @apply text-white/30 hover:text-white/60; }
-        
-        .fade-up { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -61,15 +51,55 @@
     <script type="text/babel">
         const { useState } = React;
 
+        // --- TÁCH RIÊNG MODULE ĐỂ KHÔNG BỊ NHẢY CHỮ ---
+        const CustomerModule = ({ customers, setCustomers, form, setForm, handleSave }) => {
+            return (
+                <div className="max-w-7xl mx-auto px-6 py-12">
+                    <h1 className="text-6xl font-black italic mb-12 gold-text uppercase" style={{fontFamily: "'Noto Serif SC', serif"}}>/ Hồ sơ khách hàng</h1>
+                    
+                    <div className="luxury-panel p-8 mb-16">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <div>
+                                <label className="text-[10px] font-black uppercase text-[#d4af37] ml-2 mb-2 block tracking-widest">Họ tên</label>
+                                <input className="input-pro uppercase" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="NHẬP TÊN..." />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black uppercase text-[#d4af37] ml-2 mb-2 block tracking-widest">Điện thoại</label>
+                                <input className="input-pro" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="SỐ ĐIỆN THOẠI..." />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-black uppercase text-[#d4af37] ml-2 mb-2 block tracking-widest">Địa chỉ</label>
+                                <input className="input-pro" value={form.note} onChange={e => setForm({...form, note: e.target.value})} placeholder="GHI CHÚ..." />
+                            </div>
+                        </div>
+                        <button onClick={handleSave} className="h-20 w-full bg-[#d4af37] text-black font-black text-2xl uppercase rounded-xl shadow-2xl active:scale-95 transition-all">LƯU THÔNG TIN +</button>
+                    </div>
+
+                    <div className="space-y-4">
+                        {customers.map(c => (
+                            <div key={c.id} className="luxury-panel p-8 flex justify-between items-center bg-white/5">
+                                <div>
+                                    <h3 className="text-3xl font-black gold-text uppercase" style={{fontFamily: "'Noto Serif SC', serif"}}>{c.name}</h3>
+                                    <p className="text-zinc-500 font-bold italic">{c.phone} | {c.note}</p>
+                                </div>
+                                <div className="flex gap-6">
+                                    <button onClick={() => {setForm(c); window.scrollTo(0,0)}} className="text-[#d4af37] font-black border-b border-[#d4af37]">Sửa</button>
+                                    <button onClick={() => setCustomers(customers.filter(i => i.id !== c.id))} className="text-red-700 font-black">Xóa</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
         const App = () => {
             const [view, setView] = useState('menu');
-            const [customers, setCustomers] = useState([
-                { id: 1, name: "NGUYỄN PHÚ VINH", phone: "0901.888.999", note: "Quận 1, TP.HCM" }
-            ]);
+            const [customers, setCustomers] = useState([{ id: 1, name: "NGUYỄN PHÚ VINH", phone: "0901.888.999", note: "Quận 1" }]);
             const [form, setForm] = useState({ id: null, name: '', phone: '', note: '' });
 
             const handleSave = () => {
-                if (!form.name || !form.phone) return alert("HÃY NHẬP ĐỦ TÊN VÀ SĐT!");
+                if (!form.name || !form.phone) return alert("THIẾU THÔNG TIN!");
                 if (form.id) {
                     setCustomers(customers.map(c => c.id === form.id ? {...form, name: form.name.toUpperCase()} : c));
                 } else {
@@ -78,82 +108,30 @@
                 setForm({ id: null, name: '', phone: '', note: '' });
             };
 
-            const CustomerModule = () => (
-                <div className="fade-up max-w-7xl mx-auto px-6 py-12">
-                    <h1 className="text-6xl md:text-7xl font-black italic mb-12 gold-text uppercase tracking-tighter" style={{fontFamily: "'Noto Serif SC', serif"}}>
-                        / Hồ sơ khách hàng
-                    </h1>
-                    
-                    <div className="luxury-panel p-8 md:p-10 mb-16">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-[#d4af37] ml-2 mb-2 block">Họ tên</label>
-                                <input className="input-professional w-full uppercase" placeholder="NHẬP TÊN..." value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
-                            </div>
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-[#d4af37] ml-2 mb-2 block">Điện thoại</label>
-                                <input className="input-professional w-full" placeholder="SỐ ĐIỆN THOẠI..." type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
-                            </div>
-                            <div>
-                                <label className="text-[10px] font-black uppercase tracking-widest text-[#d4af37] ml-2 mb-2 block">Ghi chú địa chỉ</label>
-                                <input className="input-professional w-full" placeholder="ĐỊA CHỈ..." value={form.note} onChange={e => setForm({...form, note: e.target.value})} />
-                            </div>
-                        </div>
-                        <button onClick={handleSave} className="h-20 w-full bg-[#d4af37] text-black font-black text-2xl uppercase tracking-[0.2em] rounded-xl shadow-2xl active:scale-95 transition-all">
-                            {form.id ? "Cập Nhật Hồ Sơ" : "Xác Nhận Lưu Trữ +"}
-                        </button>
-                    </div>
-
-                    <div className="space-y-4">
-                        {customers.map(c => (
-                            <div key={c.id} className="luxury-panel p-8 flex justify-between items-center bg-white/5">
-                                <div>
-                                    <h3 className="text-3xl font-black gold-text uppercase leading-none mb-2" style={{fontFamily: "'Noto Serif SC', serif"}}>{c.name}</h3>
-                                    <p className="text-zinc-500 font-bold italic tracking-wide">{c.phone} | {c.note}</p>
-                                </div>
-                                <div className="flex gap-6">
-                                    <button onClick={() => {setForm(c); window.scrollTo({top:0, behavior:'smooth'})}} className="text-[#d4af37] font-black text-xs border-b border-[#d4af37]">Sửa</button>
-                                    <button onClick={() => setCustomers(customers.filter(i => i.id !== c.id))} className="text-red-700 font-black text-xs">Xóa</button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            );
-
-            const MainMenu = () => (
-                <div className="fade-up max-w-7xl mx-auto px-8 py-20">
-                    <h1 className="text-7xl md:text-[9rem] font-black gold-text leading-none uppercase mb-20" style={{fontFamily: "'Noto Serif SC', serif"}}>
-                        PHÚ VINH<br/><span className="text-white/5 italic">CLASSIC</span>
-                    </h1>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {['customers', 'orders', 'debts', 'reports'].map((v) => (
-                            <div key={v} onClick={() => setView(v)} className="luxury-panel p-10 cursor-pointer group">
-                                <h2 className="text-4xl font-black uppercase group-hover:gold-text transition-all" style={{fontFamily: "'Noto Serif SC', serif"}}>
-                                    {v === 'customers' ? 'Khách hàng' : v === 'orders' ? 'Đơn hàng' : v === 'debts' ? 'Công nợ' : 'Báo cáo'}
-                                </h2>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            );
-
             return (
                 <div className="min-h-screen pb-48">
-                    {view === 'menu' && <MainMenu />}
-                    {view === 'customers' && <CustomerModule />}
-                    {['orders', 'debts', 'reports'].includes(view) && (
-                        <div className="p-24 text-center opacity-20 text-4xl uppercase italic">Đang cập nhật...</div>
+                    {view === 'menu' && (
+                        <div className="max-w-7xl mx-auto px-8 py-20">
+                            <h1 className="text-7xl md:text-[9rem] font-black gold-text uppercase leading-none mb-20" style={{fontFamily: "'Noto Serif SC', serif"}}>PHÚ VINH<br/><span className="text-white/5 italic">CLASSIC</span></h1>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {['customers', 'orders', 'debts', 'reports'].map(v => (
+                                    <div key={v} onClick={() => setView(v)} className="luxury-panel p-10 cursor-pointer group uppercase font-black chinese-title text-4xl hover:gold-text">
+                                        {v === 'customers' ? 'Khách hàng' : v === 'orders' ? 'Đơn hàng' : v === 'debts' ? 'Công nợ' : 'Báo cáo'}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     )}
+
+                    {view === 'customers' && <CustomerModule customers={customers} setCustomers={setCustomers} form={form} setForm={setForm} handleSave={handleSave} />}
                     
-                    {/* THANH ĐIỀU HƯỚNG 5 NỘI DUNG */}
                     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[95%] max-w-4xl z-50">
                         <nav className="nav-capsule flex justify-around items-center">
-                            <button onClick={() => setView('menu')} className={`nav-btn ${view === 'menu' ? 'nav-active' : 'nav-inactive'}`}>T.Quát</button>
-                            <button onClick={() => setView('customers')} className={`nav-btn ${view === 'customers' ? 'nav-active' : 'nav-inactive'}`}>Khách</button>
-                            <button onClick={() => setView('orders')} className={`nav-btn ${view === 'orders' ? 'nav-active' : 'nav-inactive'}`}>Đơn</button>
-                            <button onClick={() => setView('debts')} className={`nav-btn ${view === 'debts' ? 'nav-active' : 'nav-inactive'}`}>Nợ</button>
-                            <button onClick={() => setView('reports')} className={`nav-btn ${view === 'reports' ? 'nav-active' : 'nav-inactive'}`}>B.Cáo</button>
+                            {['menu', 'customers', 'orders', 'debts', 'reports'].map(v => (
+                                <button key={v} onClick={() => setView(v)} className={`px-4 py-3 rounded-full font-black text-[10px] md:text-xs uppercase transition-all ${view === v ? 'nav-active' : 'text-white/30'}`}>
+                                    {v === 'menu' ? 'T.Quát' : v === 'customers' ? 'Khách' : v === 'orders' ? 'Đơn' : v === 'debts' ? 'Nợ' : 'B.Cáo'}
+                                </button>
+                            ))}
                         </nav>
                     </div>
                 </div>
