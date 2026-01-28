@@ -3,18 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÚ VINH | HỆ THỐNG QUẢN TRỊ</title>
+    <title>PHÚ VINH | GLOBAL SYSTEM</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
     <style>
         body { 
             font-family: 'Inter', sans-serif; 
             background-color: #050505; 
             color: #ffffff;
             letter-spacing: -0.02em;
+            overflow-x: hidden;
         }
         .glass-panel {
             background: rgba(255, 255, 255, 0.03);
@@ -30,113 +31,143 @@
             -webkit-text-fill-color: transparent;
         }
         .input-global {
-            @apply bg-transparent border-b-2 border-white/10 text-4xl md:text-6xl font-bold py-6 outline-none transition-all duration-300 w-full mb-12 focus:border-[#00ff41];
+            @apply bg-transparent border-b-2 border-white/10 text-4xl md:text-6xl font-bold py-6 outline-none transition-all duration-300 w-full mb-12 focus:border-[#00ff41] text-[#00ff41];
         }
         .fade-up { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* Hiệu ứng đặc biệt cho nút bấm */
+        .nav-btn { @apply px-8 py-4 rounded-full font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300; }
+        .nav-active { @apply bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.2)]; }
+        .nav-inactive { @apply text-white/40 hover:text-white; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState } = React;
+        const { useState, useEffect } = React;
 
         const App = () => {
-            const [view, setView] = useState('reports');
+            const [view, setView] = useState('menu');
             const [search, setSearch] = useState('');
 
-            // Dữ liệu mẫu cho báo cáo
-            const stats = {
-                delivered: 42,
-                pending: 12,
-                revenue: 2150000,
-            };
+            // Dữ liệu giả lập (Sau này kết nối Firebase)
+            const [customers] = useState([
+                { id: 1, name: "NGUYỄN VĂN A", phone: "090123456", debtBins: 12, totalBought: 150 },
+                { id: 2, name: "TRẦN THỊ B", phone: "098877665", debtBins: 5, totalBought: 85 }
+            ]);
 
-            const ReportModule = () => (
-                <div className="fade-up max-w-7xl mx-auto px-6 py-12 pb-40">
-                    {/* TIÊU ĐỀ HỆ THỐNG */}
-                    <header className="flex justify-between items-end mb-24 border-l-8 border-[#00ff41] pl-10">
-                        <div>
-                            <p className="text-[#00ff41] font-bold tracking-[0.4em] uppercase text-sm mb-4">CÔNG CỤ PHÂN TÍCH</p>
-                            <h1 className="text-7xl md:text-9xl font-black uppercase italic tracking-tighter leading-none">BÁO CÁO<br/><span className="opacity-20">TỔNG HỢP</span></h1>
-                        </div>
-                        <div className="text-right hidden md:block">
-                            <p className="text-zinc-500 font-bold uppercase text-xs tracking-widest mb-2">THỜI GIAN HỆ THỐNG</p>
-                            <p className="text-2xl font-bold">{new Date().toLocaleTimeString('vi-VN')}</p>
-                        </div>
+            const stats = { delivered: 42, pending: 8, revenue: 2450000 };
+
+            // --- 1. BẢNG ĐIỀU KHIỂN (DASHBOARD) ---
+            const MainMenu = () => (
+                <div className="fade-up max-w-7xl mx-auto px-6 py-12">
+                    <header className="mb-20">
+                        <p className="text-[#00ff41] font-bold tracking-[0.4em] uppercase text-sm mb-4">Hệ thống đang trực tuyến</p>
+                        <h1 className="text-8xl md:text-9xl font-black italic leading-[0.8] tracking-tighter uppercase">
+                            PHÚ VINH<br/><span className="text-white/10 italic">SYSTEM</span>
+                        </h1>
                     </header>
 
-                    {/* TẦNG 1: CHỈ SỐ HOẠT ĐỘNG HÔM NAY */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
-                        <div className="glass-panel p-12 hover:bg-white/5 transition-all">
-                            <p className="text-zinc-500 font-bold uppercase text-xs mb-8 tracking-[0.2em]">Đơn hàng đã giao</p>
-                            <p className="metric-value text-8xl md:text-9xl mb-6">{stats.delivered}</p>
-                            <div className="h-2 w-full bg-white/10 rounded-full">
-                                <div className="h-full bg-[#00ff41] w-[75%] rounded-full shadow-[0_0_15px_rgba(0,255,65,0.5)]"></div>
-                            </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div onClick={() => setView('customers')} className="glass-panel group cursor-pointer p-10 hover:border-[#00ff41] hover:bg-white/5 transition-all">
+                            <div className="text-4xl mb-12 bg-white/5 w-16 h-16 flex items-center justify-center rounded-2xl group-hover:bg-[#00ff41] transition-all">👥</div>
+                            <h2 className="text-5xl font-black uppercase italic leading-none tracking-tighter mb-4">QL KHÁCH<br/>HÀNG</h2>
+                            <p className="text-white/30 text-xs font-bold uppercase tracking-widest italic">Hồ sơ & Phân loại</p>
                         </div>
 
-                        <div className="glass-panel p-12 hover:bg-white/5 transition-all">
-                            <p className="text-zinc-500 font-bold uppercase text-xs mb-8 tracking-[0.2em]">Đơn chờ xử lý</p>
-                            <p className="metric-value text-8xl md:text-9xl mb-6" style={{WebkitTextFillColor: 'unset', color: '#ff6b00'}}>{stats.pending}</p>
-                            <p className="text-sm font-bold text-[#ff6b00] italic uppercase tracking-wider">Cần giao ngay</p>
+                        <div onClick={() => setView('orders')} className="glass-panel group cursor-pointer p-10 hover:border-blue-500 hover:bg-white/5 transition-all">
+                            <div className="text-4xl mb-12 bg-white/5 w-16 h-16 flex items-center justify-center rounded-2xl group-hover:bg-blue-500 transition-all">📦</div>
+                            <h2 className="text-5xl font-black uppercase italic leading-none tracking-tighter mb-4">QL ĐƠN<br/>HÀNG</h2>
+                            <p className="text-white/30 text-xs font-bold uppercase tracking-widest italic">Giao nhận & Trạng thái</p>
                         </div>
 
-                        <div className="glass-panel p-12 bg-white text-black border-none">
-                            <p className="text-black/50 font-bold uppercase text-xs mb-8 tracking-[0.2em]">Tổng doanh thu</p>
-                            <p className="text-4xl md:text-6xl font-black leading-none mb-6">{stats.revenue.toLocaleString()}đ</p>
-                            <p className="text-xs font-black uppercase tracking-widest opacity-40 italic">Hiệu suất trong ngày</p>
+                        <div onClick={() => setView('debts')} className="glass-panel group cursor-pointer p-10 hover:border-red-500 hover:bg-white/5 transition-all">
+                            <div className="text-4xl mb-12 bg-white/5 w-16 h-16 flex items-center justify-center rounded-2xl group-hover:bg-red-500 transition-all">💰</div>
+                            <h2 className="text-5xl font-black uppercase italic leading-none tracking-tighter mb-4">QL CÔNG<br/>NỢ</h2>
+                            <p className="text-white/30 text-xs font-bold uppercase tracking-widest italic">Vỏ bình & Tài chính</p>
                         </div>
-                    </div>
-
-                    {/* TẦNG 2: TRA CỨU CHI TIẾT KHÁCH HÀNG */}
-                    <div className="mb-24">
-                        <p className="text-zinc-500 font-bold uppercase text-sm mb-6 tracking-[0.3em]">Tìm kiếm thông minh</p>
-                        <input 
-                            className="input-global" 
-                            placeholder="NHẬP TÊN KHÁCH HÀNG..." 
-                            value={search}
-                            onChange={(e) => setSearchTerm(e.target.value)} // Lưu ý: Ở bản rút gọn này dùng setSearch
-                            onInput={(e) => setSearch(e.target.value)}
-                        />
-                        
-                        {search && (
-                            <div className="glass-panel p-12 border-[#00ff41]/40 fade-up bg-white/5">
-                                <div className="flex items-center gap-4 mb-12">
-                                    <div className="h-4 w-4 bg-[#00ff41] rounded-full animate-pulse"></div>
-                                    <h3 className="text-3xl font-black uppercase italic tracking-tight">KẾT QUẢ: {search.toUpperCase()}</h3>
-                                </div>
-                                
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
-                                    <div className="border-l-2 border-white/10 pl-8">
-                                        <p className="text-zinc-500 text-xs font-bold uppercase mb-4 tracking-widest">Sản lượng đã lấy</p>
-                                        <p className="text-6xl font-black italic">128 <span className="text-sm opacity-30 not-italic">BÌNH</span></p>
-                                    </div>
-                                    <div className="border-l-2 border-white/10 pl-8">
-                                        <p className="text-zinc-500 text-xs font-bold uppercase mb-4 tracking-widest">Số vỏ đang nợ</p>
-                                        <p className="text-6xl font-black text-[#ff004c] italic">15</p>
-                                    </div>
-                                    <div className="border-l-2 border-white/10 pl-8">
-                                        <p className="text-zinc-500 text-xs font-bold uppercase mb-4 tracking-widest">Dư nợ hiện tại</p>
-                                        <p className="text-6xl font-black text-[#ff004c] italic">750K</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
                     </div>
                 </div>
             );
 
+            // --- 2. BÁO CÁO THÔNG MINH ---
+            const ReportModule = () => {
+                const selectedCust = customers.find(c => c.name.includes(search.toUpperCase()) && search !== "");
+
+                return (
+                    <div className="fade-up max-w-7xl mx-auto px-6 py-12">
+                        <header className="flex justify-between items-end mb-24 border-l-8 border-[#00ff41] pl-10">
+                            <div>
+                                <p className="text-[#00ff41] font-bold tracking-[0.4em] uppercase text-sm mb-4">Dữ liệu thời gian thực</p>
+                                <h1 className="text-7xl md:text-9xl font-black uppercase italic tracking-tighter leading-none">BÁO CÁO<br/><span className="opacity-20">TỔNG HỢP</span></h1>
+                            </div>
+                        </header>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
+                            <div className="glass-panel p-12">
+                                <p className="text-white/40 font-bold uppercase text-[10px] tracking-[0.2em] mb-8">Đơn đã giao</p>
+                                <p className="metric-value text-8xl md:text-9xl mb-4">{stats.delivered}</p>
+                                <div className="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                                    <div className="h-full bg-[#00ff41] w-[85%] shadow-[0_0_15px_#00ff41]"></div>
+                                </div>
+                            </div>
+                            <div className="glass-panel p-12">
+                                <p className="text-white/40 font-bold uppercase text-[10px] tracking-[0.2em] mb-8">Đơn chờ xử lý</p>
+                                <p className="metric-value text-8xl md:text-9xl mb-4" style={{WebkitTextFillColor: 'unset', color: '#ff6b00'}}>{stats.pending}</p>
+                            </div>
+                            <div className="glass-panel p-12 bg-white text-black border-none">
+                                <p className="text-black/40 font-bold uppercase text-[10px] tracking-[0.2em] mb-8">Tổng doanh thu</p>
+                                <p className="text-4xl md:text-6xl font-black leading-none">{stats.revenue.toLocaleString()}đ</p>
+                            </div>
+                        </div>
+
+                        <div className="mb-20">
+                            <p className="text-white/40 font-bold uppercase text-xs mb-6 tracking-[0.3em]">Tra cứu khách hàng nhanh</p>
+                            <input className="input-global" placeholder="NHẬP TÊN KHÁCH..." value={search} onChange={(e) => setSearch(e.target.value.toUpperCase())} />
+                            
+                            {selectedCust && (
+                                <div className="glass-panel p-12 border-[#00ff41]/40 bg-white/5 fade-up">
+                                    <h3 className="text-3xl font-black mb-12 italic text-[#00ff41] uppercase italic">Khách hàng: {selectedCust.name}</h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                                        <div className="border-l border-white/10 pl-8">
+                                            <p className="text-white/40 text-[10px] font-bold uppercase mb-4">Tổng SL đã lấy</p>
+                                            <p className="text-6xl font-black">{selectedCust.totalBought} <span className="text-sm opacity-20">BÌNH</span></p>
+                                        </div>
+                                        <div className="border-l border-white/10 pl-8">
+                                            <p className="text-white/40 text-[10px] font-bold uppercase mb-4">Nợ vỏ hiện tại</p>
+                                            <p className="text-6xl font-black text-[#ff004c]">{selectedCust.debtBins}</p>
+                                        </div>
+                                        <div className="border-l border-white/10 pl-8">
+                                            <p className="text-white/40 text-[10px] font-bold uppercase mb-4">Nợ tiền dự tính</p>
+                                            <p className="text-6xl font-black text-[#ff004c]">{(selectedCust.debtBins * 50000).toLocaleString()}đ</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                );
+            };
+
             return (
-                <div className="min-h-screen">
+                <div className="min-h-screen pb-40">
+                    {view === 'menu' && <MainMenu setView={setView} />}
                     {view === 'reports' && <ReportModule />}
                     
-                    {/* THANH ĐIỀU HƯỚNG CẬP NHẬT TIẾNG VIỆT */}
-                    <div className="fixed bottom-10 left-1/2 -translate-x-1/2 w-[90%] md:w-auto flex bg-white/5 backdrop-blur-3xl border border-white/10 rounded-full p-2 z-50 shadow-2xl">
-                        <button onClick={() => setView('menu')} className="px-10 py-5 rounded-full font-black text-xs uppercase tracking-[0.2em] hover:bg-white hover:text-black transition-all">BẢNG ĐIỀU KHIỂN</button>
-                        <button onClick={() => setView('reports')} className="px-10 py-5 rounded-full bg-white text-black font-black text-xs uppercase tracking-[0.2em] shadow-xl">PHÂN TÍCH BÁO CÁO</button>
-                    </div>
+                    {/* Placeholder cho các module khác */}
+                    {['customers', 'orders', 'debts'].includes(view) && (
+                        <div className="fade-up max-w-7xl mx-auto px-6 py-24 text-center">
+                            <h1 className="text-6xl font-black opacity-20 uppercase italic italic">Module {view}<br/>đang cập nhật...</h1>
+                        </div>
+                    )}
+
+                    {/* THANH ĐIỀU HƯỚNG CỐ ĐỊNH */}
+                    <nav className="fixed bottom-10 left-1/2 -translate-x-1/2 flex gap-2 glass-panel p-2 z-50 border-white/20">
+                        <button onClick={() => setView('menu')} className={`nav-btn ${view === 'menu' ? 'nav-active' : 'nav-inactive'}`}>Bảng điều khiển</button>
+                        <button onClick={() => setView('reports')} className={`nav-btn ${view === 'reports' ? 'nav-active' : 'nav-inactive'}`}>Báo cáo</button>
+                    </nav>
                 </div>
             );
         };
