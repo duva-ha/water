@@ -3,95 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Giviso Mobile OS</title>
+    <title>Giviso Mobile OS - Responsive</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
     <style>
-        body { 
-            font-family: 'Space Grotesk', sans-serif; 
-            background: #fdfdfd; 
-            color: #000; 
-            touch-action: manipulation; /* Tối ưu độ trễ cảm ứng */
-        }
-        .brutal-card-mobile { 
-            @apply border-4 border-black rounded-[2.5rem] p-6 mb-4 flex flex-col items-start justify-between transition-all active:scale-95 shadow-[6px_6px_0px_0px_rgba(0,0,0,1)]; 
-        }
-        .input-mobile { 
-            @apply bg-white border-4 border-black text-black px-5 py-4 rounded-2xl font-bold w-full outline-none focus:ring-4 focus:ring-yellow-400 text-lg mb-3; 
-        }
-        .btn-bottom { 
-            @apply fixed bottom-6 left-6 right-6 bg-black text-white font-black py-5 rounded-3xl border-4 border-black shadow-[6px_6px_0px_0px_rgba(255,255,255,0.3)] z-50 text-center uppercase; 
-        }
-        .fade-in { animation: fadeIn 0.2s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        body { font-family: 'Space Grotesk', sans-serif; background: #fdfdfd; color: #000; touch-action: manipulation; }
+        /* Tự động co giãn: Container sẽ chiếm 95% màn hình di động và tối đa 1200px trên máy tính */
+        .responsive-container { @apply w-[95%] max-w-[1200px] mx-auto pt-6 pb-32; }
+        .brutal-card-mobile { @apply border-[5px] border-black rounded-[2.5rem] p-8 mb-6 flex flex-col items-start justify-between transition-all active:scale-95 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] cursor-pointer; }
+        .input-brutal-huge { @apply bg-white border-[4px] border-black text-black px-6 py-5 rounded-2xl font-black w-full outline-none focus:ring-4 focus:ring-yellow-400 text-2xl mb-3; }
+        .column-header { @apply text-xs font-black uppercase tracking-[0.2em] text-zinc-400 mb-2; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="p-4 pb-32">
+<body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
         const App = () => {
             const [view, setView] = useState('menu');
             const [customers, setCustomers] = useState([
-                { id: 1, name: "NGUYỄN VĂN A", phone: "090123", address: "GÒ VẤP" }
+                { id: 1, name: "NGUYỄN VĂN A", phone: "090123" }
             ]);
-            const [orders, setOrders] = useState([]);
 
-            // --- MENU CHÍNH MOBILE (Dạng thẻ dọc) ---
+            // --- MENU CHÍNH (Tự động co giãn Grid) ---
             const MainMenu = () => (
-                <div className="fade-in space-y-4 pt-4">
-                    <div className="mb-8 px-2">
-                        <h1 className="text-5xl font-black italic tracking-tighter leading-none">GIVISO<br/><span className="text-blue-600 underline">MOBILE</span></h1>
-                    </div>
-                    
-                    <div onClick={() => setView('customers')} className="brutal-card-mobile bg-[#ccff00]">
-                        <span className="text-5xl mb-4 text-black">👥</span>
-                        <h2 className="text-3xl font-black uppercase italic leading-tight text-black">Khách Hàng</h2>
-                    </div>
-
-                    <div onClick={() => setView('orders')} className="brutal-card-mobile bg-[#ff00ff] text-white">
-                        <span className="text-5xl mb-4">📦</span>
-                        <h2 className="text-3xl font-black uppercase italic leading-tight text-white font-black">Đơn Hàng</h2>
-                    </div>
-
-                    <div onClick={() => setView('debts')} className="brutal-card-mobile bg-[#00ffff] text-black">
-                        <span className="text-5xl mb-4">💰</span>
-                        <h2 className="text-3xl font-black uppercase italic leading-tight text-black">Công Nợ</h2>
-                    </div>
-
-                    <div onClick={() => setView('reports')} className="brutal-card-mobile bg-[#ffffff] text-black border-dashed">
-                        <span className="text-5xl mb-4">📊</span>
-                        <h2 className="text-3xl font-black uppercase italic leading-tight text-black">Báo Cáo</h2>
+                <div className="fade-in responsive-container">
+                    <h1 className="text-6xl md:text-8xl font-black italic tracking-tighter leading-none mb-12">GIVISO<br/><span className="text-blue-600 underline">SYSTEM</span></h1>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div onClick={() => setView('customers')} className="brutal-card-mobile bg-[#ccff00]">
+                            <span className="text-6xl mb-6">👥</span>
+                            <h2 className="text-4xl md:text-5xl font-black uppercase italic leading-tight">Khách Hàng</h2>
+                        </div>
+                        <div onClick={() => setView('orders')} className="brutal-card-mobile bg-[#ff00ff] text-white">
+                            <span className="text-6xl mb-6">📦</span>
+                            <h2 className="text-4xl md:text-5xl font-black uppercase italic leading-tight font-black">Đơn Hàng</h2>
+                        </div>
+                        <div onClick={() => setView('debts')} className="brutal-card-mobile bg-[#00ffff]">
+                            <span className="text-6xl mb-6">💰</span>
+                            <h2 className="text-4xl md:text-5xl font-black uppercase italic leading-tight">Công Nợ</h2>
+                        </div>
+                        <div onClick={() => setView('reports')} className="brutal-card-mobile bg-white border-dashed">
+                            <span className="text-6xl mb-6">📊</span>
+                            <h2 className="text-4xl md:text-5xl font-black uppercase italic leading-tight">Báo Cáo</h2>
+                        </div>
                     </div>
                 </div>
             );
 
-            // --- MODULE KHÁCH HÀNG (Dạng thẻ danh bạ) ---
+            // --- MODULE KHÁCH HÀNG (Thiết kế mới theo yêu cầu) ---
             const CustomerModule = () => {
-                const [form, setForm] = useState({name: '', phone: '', address: ''});
+                const [form, setForm] = useState({name: '', phone: ''});
+                
+                const handleSave = () => {
+                    if(!form.name || !form.phone) return alert("Nhập đủ thông tin!");
+                    setCustomers([{id: Date.now(), ...form}, ...customers]);
+                    setForm({name:'', phone:''});
+                };
+
                 return (
-                    <div className="fade-in">
-                        <h1 className="text-4xl font-black mb-6 italic border-b-8 border-[#ccff00] inline-block">KHÁCH HÀNG</h1>
-                        <div className="mb-8">
-                            <input className="input-mobile" placeholder="HỌ TÊN" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
-                            <input className="input-mobile" placeholder="SỐ ĐIỆN THOẠI" type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
-                            <button onClick={() => {setCustomers([...customers, {id: Date.now(), ...form}]); setForm({name:'', phone:'', address:''})}} 
-                                    className="w-full bg-black text-[#ccff00] font-black py-5 rounded-2xl text-xl border-4 border-black active:bg-zinc-800">
-                                LƯU KHÁCH +
-                            </button>
+                    <div className="fade-in responsive-container">
+                        <h1 className="text-5xl md:text-7xl font-black mb-12 italic border-b-[12px] border-[#ccff00] inline-block">KHÁCH HÀNG /</h1>
+                        
+                        {/* Khu vực nhập liệu: Tên - SĐT - Nút Lưu nằm trên 1 hàng (trên desktop) */}
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mb-16 items-end">
+                            <div className="md:col-span-5">
+                                <label className="column-header">Họ Tên Khách Hàng</label>
+                                <input className="input-brutal-huge" placeholder="VÍ DỤ: NGUYỄN VĂN A" value={form.name} onChange={e => setForm({...form, name: e.target.value.toUpperCase()})} />
+                            </div>
+                            <div className="md:col-span-4">
+                                <label className="column-header">Số Điện Thoại</label>
+                                <input className="input-brutal-huge" placeholder="090..." type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
+                            </div>
+                            <div className="md:col-span-3">
+                                <button onClick={handleSave} className="w-full bg-black text-[#ccff00] font-black py-5 rounded-2xl text-2xl border-4 border-black mb-[12px] active:scale-95 transition-all">
+                                    LƯU KHÁCH +
+                                </button>
+                            </div>
                         </div>
-                        <div className="space-y-4">
-                            {customers.map((c, i) => (
-                                <div key={c.id} className="bg-white border-4 border-black p-5 rounded-3xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                                    <p className="text-2xl font-black uppercase leading-none mb-1">{c.name}</p>
-                                    <p className="text-lg font-bold text-zinc-500 italic">{c.phone}</p>
-                                    <div className="mt-4 flex justify-end">
-                                        <button onClick={() => setCustomers(customers.filter(item => item.id !== c.id))} className="bg-red-100 text-red-600 px-4 py-1 rounded-full font-black text-xs">XÓA</button>
+
+                        {/* Danh sách hiển thị */}
+                        <div className="space-y-6">
+                            <div className="hidden md:grid grid-cols-12 px-8 mb-2">
+                                <div className="col-span-6 column-header italic">Tên Khách Hàng</div>
+                                <div className="col-span-4 column-header italic text-center">Liên Hệ</div>
+                            </div>
+                            {customers.map((c) => (
+                                <div key={c.id} className="bg-white border-[5px] border-black p-8 rounded-[2.5rem] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] grid grid-cols-1 md:grid-cols-12 items-center gap-4">
+                                    <div className="md:col-span-6">
+                                        <p className="text-4xl font-black uppercase leading-none tracking-tighter">{c.name}</p>
+                                    </div>
+                                    <div className="md:col-span-4 text-left md:text-center">
+                                        <p className="text-3xl font-bold text-zinc-400 italic tracking-tighter">{c.phone}</p>
+                                    </div>
+                                    <div className="md:col-span-2 text-right">
+                                        <button onClick={() => setCustomers(customers.filter(i => i.id !== c.id))} className="bg-red-50 text-red-500 px-6 py-2 rounded-xl font-black text-sm uppercase border-2 border-red-200">Xóa</button>
                                     </div>
                                 </div>
                             ))}
@@ -100,37 +112,15 @@
                 );
             };
 
-            // --- MODULE ĐƠN HÀNG (Dạng danh sách đặt hàng) ---
-            const OrderModule = () => (
-                <div className="fade-in">
-                    <h1 className="text-4xl font-black mb-6 italic border-b-8 border-[#ff00ff] inline-block text-black">ĐƠN HÀNG</h1>
-                    <div className="bg-black text-white p-6 rounded-[2.5rem] mb-8">
-                        <label className="text-xs font-bold uppercase opacity-50 mb-2 block tracking-widest">Chọn khách hàng</label>
-                        <select className="input-mobile !mb-4">
-                            <option>--- DANH SÁCH ---</option>
-                            {customers.map(c => <option key={c.id}>{c.name}</option>)}
-                        </select>
-                        <div className="grid grid-cols-2 gap-3">
-                            <input className="input-mobile" placeholder="SL BÌNH" type="number" />
-                            <input className="input-mobile" placeholder="SL LỐC" type="number" />
-                        </div>
-                        <button className="w-full bg-[#ff00ff] text-white font-black py-5 rounded-2xl border-4 border-white mt-2">TẠO ĐƠN GIAO</button>
-                    </div>
-                </div>
-            );
-
             return (
-                <div>
+                <div className="min-h-screen">
                     {view === 'menu' && <MainMenu />}
                     {view === 'customers' && <CustomerModule />}
-                    {view === 'orders' && <OrderModule />}
-                    {view === 'debts' && <div className="fade-in text-5xl font-black mt-20 italic">CÔNG NỢ...</div>}
-                    {view === 'reports' && <div className="fade-in text-5xl font-black mt-20 italic">BÁO CÁO...</div>}
-
-                    {/* Nút quay lại kiểu Mobile Floating Action Button */}
+                    
+                    {/* Floating Back Button */}
                     {view !== 'menu' && (
-                        <button onClick={() => setView('menu')} className="btn-bottom">
-                            ⬅ QUAY LẠI MENU CHÍNH
+                        <button onClick={() => setView('menu')} className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black text-white font-black px-12 py-5 rounded-full border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)] z-50 text-xl tracking-tighter hover:bg-zinc-800 active:scale-90 transition-all uppercase">
+                            ⬅ Trở Lại Menu
                         </button>
                     )}
                 </div>
