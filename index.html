@@ -3,22 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÚ VINH | GLOBAL SYSTEM</title>
+    <title>PHÚ VINH | XUÂN GIÁP THÌN 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Inter:wght@400;900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #050505; color: #ffffff; letter-spacing: -0.02em; overflow-x: hidden; }
-        .glass-panel { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 2.5rem; }
-        .metric-value { font-weight: 900; line-height: 0.9; background: linear-gradient(180deg, #fff 0%, rgba(255,255,255,0.4) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .input-global { @apply bg-transparent border-b-2 border-white/10 text-4xl md:text-6xl font-bold py-6 outline-none transition-all duration-300 w-full mb-12 focus:border-[#00ff41] text-[#00ff41]; }
+        :root {
+            --tet-red: #b91c1c; /* Đỏ đô */
+            --tet-gold: #fbbf24; /* Vàng kim */
+        }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #450a0a; /* Nền đỏ cực đậm */
+            background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png"); /* Họa tiết chìm */
+            color: #fef3c7;
+            letter-spacing: -0.01em;
+            overflow-x: hidden;
+        }
+        /* Card phong cách Trung Hoa */
+        .oriental-panel {
+            background: rgba(185, 28, 28, 0.15);
+            backdrop-filter: blur(15px);
+            border: 2px solid #fbbf24;
+            border-radius: 1rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(251, 191, 36, 0.1);
+            position: relative;
+        }
+        /* Họa tiết góc kiểu Trung Hoa */
+        .oriental-panel::before {
+            content: '🧧'; position: absolute; top: 10px; right: 10px; opacity: 0.5;
+        }
+        .metric-value {
+            font-weight: 900;
+            line-height: 0.9;
+            color: #fbbf24;
+            text-shadow: 2px 2px 0px #7f1d1d, 4px 4px 15px rgba(251, 191, 36, 0.4);
+        }
+        .input-oriental {
+            @apply bg-transparent border-b-4 border-[#fbbf24]/30 text-4xl md:text-6xl font-bold py-6 outline-none transition-all duration-300 w-full mb-12 focus:border-[#fbbf24] text-[#fbbf24] placeholder-[#fbbf24]/30;
+        }
+        .chinese-font { font-family: 'ZCOOL+QingKe+HuangYou', cursive; }
         .fade-up { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-        .nav-btn { @apply px-8 py-4 rounded-full font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300; }
-        .nav-active { @apply bg-white text-black shadow-[0_0_30px_rgba(255,255,255,0.2)]; }
-        .nav-inactive { @apply text-white/40 hover:text-white; }
+        
+        .nav-btn { @apply px-8 py-4 rounded-lg font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 border border-[#fbbf24]/20; }
+        .nav-active { @apply bg-[#fbbf24] text-[#7f1d1d] shadow-[0_0_20px_rgba(251,191,36,0.4)]; }
+        .nav-inactive { @apply text-[#fbbf24]/60 hover:text-[#fbbf24] bg-[#7f1d1d]/40; }
     </style>
 </head>
 <body>
@@ -34,7 +66,7 @@
             const [isEditing, setIsEditing] = useState(false);
 
             const handleSave = () => {
-                if (!form.name || !form.phone) return alert("VUI LÒNG NHẬP ĐỦ TÊN VÀ SĐT!");
+                if (!form.name || !form.phone) return alert("HÃY NHẬP ĐỦ TÊN VÀ SĐT!");
                 if (isEditing) {
                     setCustomers(customers.map(c => c.id === form.id ? { ...form, name: form.name.toUpperCase() } : c));
                     setIsEditing(false);
@@ -44,66 +76,47 @@
                 setForm({ id: null, name: '', phone: '', note: '' });
             };
 
-            const handleDelete = (id) => {
-                if (confirm("XÁC NHẬN XÓA KHÁCH HÀNG NÀY?")) {
-                    setCustomers(customers.filter(c => c.id !== id));
-                }
-            };
-
-            const handleEdit = (customer) => {
-                setForm(customer);
-                setIsEditing(true);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            };
-
             const filtered = customers.filter(c => c.name.includes(search.toUpperCase()));
 
             return (
                 <div className="fade-up max-w-7xl mx-auto px-6 py-12">
-                    <header className="mb-16 border-l-8 border-[#00ff41] pl-8">
-                        <p className="text-[#00ff41] font-bold tracking-[0.4em] uppercase text-xs mb-2">Quản trị nhân sự</p>
-                        <h1 className="text-6xl md:text-8xl font-black uppercase italic tracking-tighter">Hồ sơ<br/>Khách hàng</h1>
+                    <header className="mb-16 border-l-8 border-[#fbbf24] pl-8">
+                        <p className="text-[#fbbf24] font-bold tracking-[0.4em] uppercase text-xs mb-2 italic">NHÂN HÒA - VẠN SỰ THÀNH</p>
+                        <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter chinese-font">DANH GIA<br/>KHÁCH HÀNG</h1>
                     </header>
 
-                    <div className="glass-panel p-10 mb-20">
-                        <p className="text-white/40 font-bold uppercase text-[10px] mb-8 tracking-widest italic">{isEditing ? "/ Chỉnh sửa hồ sơ" : "/ Khởi tạo hồ sơ mới"}</p>
+                    <div className="oriental-panel p-10 mb-20">
+                        <p className="text-[#fbbf24]/60 font-bold uppercase text-[10px] mb-8 tracking-widest italic">{isEditing ? "🏮 CHỈNH SỬA THÔNG TIN" : "🏮 THÊM MỚI THÀNH VIÊN"}</p>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
-                            <input className="input-global !mb-0 !text-3xl" placeholder="HỌ TÊN KHÁCH HÀNG..." value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
-                            <input className="input-global !mb-0 !text-3xl" placeholder="SỐ ĐIỆN THOẠI..." type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
+                            <input className="input-oriental !mb-0 !text-3xl" placeholder="DANH TÁNH..." value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
+                            <input className="input-oriental !mb-0 !text-3xl" placeholder="LIÊN LẠC..." type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
                         </div>
-                        <input className="input-global !text-2xl" placeholder="GHI CHÚ (ĐỊA CHỈ, ĐẶC ĐIỂM...)" value={form.note} onChange={e => setForm({...form, note: e.target.value})} />
+                        <input className="input-oriental !text-2xl" placeholder="GHI CHÚ ĐỊA CHỈ..." value={form.note} onChange={e => setForm({...form, note: e.target.value})} />
                         <div className="flex gap-4">
-                            <button onClick={handleSave} className="h-20 flex-1 bg-white text-black rounded-2xl font-black text-xl uppercase tracking-tighter active:scale-95 transition-all">
-                                {isEditing ? "Cập Nhật Hồ Sơ" : "Thêm Vào Hệ Thống +"}
+                            <button onClick={handleSave} className="h-20 flex-1 bg-[#fbbf24] text-[#7f1d1d] rounded-xl font-black text-xl uppercase tracking-tighter active:scale-95 transition-all shadow-lg">
+                                {isEditing ? "CẬP NHẬT THÔNG TIN" : "LƯU VÀO SỔ SÁCH +"}
                             </button>
-                            {isEditing && (
-                                <button onClick={() => {setIsEditing(false); setForm({id:null, name:'', phone:'', note:''})}} className="h-20 px-8 border-2 border-white/20 rounded-2xl font-black uppercase text-xs">Hủy</button>
-                            )}
                         </div>
                     </div>
 
                     <div className="mb-10 flex flex-col md:flex-row justify-between items-end gap-6">
                         <div className="w-full md:w-1/2">
-                            <p className="text-white/40 font-bold uppercase text-[10px] mb-4 tracking-widest">Bộ lọc nhanh</p>
-                            <input className="bg-white/5 border border-white/10 rounded-xl px-6 py-4 w-full outline-none focus:border-[#00ff41] font-bold" placeholder="TÌM TÊN KHÁCH HÀNG..." onChange={e => setSearch(e.target.value)} />
+                            <input className="bg-[#7f1d1d]/40 border border-[#fbbf24]/30 rounded-xl px-6 py-4 w-full outline-none focus:border-[#fbbf24] font-bold text-[#fbbf24]" placeholder="TÌM KIẾM DANH TÁNH..." onChange={e => setSearch(e.target.value)} />
                         </div>
-                        <p className="text-white/20 font-bold italic uppercase text-xs">Tổng số: {filtered.length} khách hàng</p>
                     </div>
 
-                    <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 gap-6">
                         {filtered.map(c => (
-                            <div key={c.id} className="glass-panel p-8 flex flex-col md:flex-row justify-between items-center gap-6 hover:bg-white/5 transition-all">
+                            <div key={c.id} className="oriental-panel p-8 flex flex-col md:flex-row justify-between items-center gap-6 hover:bg-[#fbbf24]/10 transition-all border-[#fbbf24]/40">
                                 <div className="flex-1">
-                                    <h3 className="text-4xl font-black italic tracking-tighter uppercase mb-2">{c.name}</h3>
-                                    <div className="flex gap-6 text-zinc-500 font-bold text-sm uppercase">
-                                        <span>📞 {c.phone}</span>
-                                        <span className="text-white/20">|</span>
-                                        <span className="truncate max-w-[300px]">📝 {c.note || "Không có ghi chú"}</span>
+                                    <h3 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#fbbf24]">{c.name}</h3>
+                                    <div className="flex gap-6 text-[#fbbf24]/60 font-bold text-sm uppercase">
+                                        <span>☎️ {c.phone}</span>
+                                        <span>🏠 {c.note || "Chưa có địa chỉ"}</span>
                                     </div>
                                 </div>
-                                <div className="flex gap-3 w-full md:w-auto">
-                                    <button onClick={() => handleEdit(c)} className="flex-1 md:flex-none bg-white/10 hover:bg-white hover:text-black px-8 py-3 rounded-xl font-black text-[10px] uppercase transition-all">Sửa</button>
-                                    <button onClick={() => handleDelete(c.id)} className="flex-1 md:flex-none bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white px-8 py-3 rounded-xl font-black text-[10px] uppercase transition-all">Xóa</button>
+                                <div className="flex gap-3">
+                                    <button onClick={() => handleEdit(c)} className="bg-[#fbbf24]/10 border border-[#fbbf24] text-[#fbbf24] px-8 py-3 rounded-lg font-black text-[10px] uppercase">Sửa</button>
                                 </div>
                             </div>
                         ))}
@@ -114,82 +127,75 @@
 
         // --- 2. BẢNG ĐIỀU KHIỂN ---
         const MainMenu = ({ setView }) => (
-            <div className="fade-up max-w-7xl mx-auto px-6 py-12">
+            <div className="fade-up max-w-7xl mx-auto px-6 py-12 text-center md:text-left">
                 <header className="mb-20">
-                    <p className="text-[#00ff41] font-bold tracking-[0.4em] uppercase text-sm mb-4">Hệ thống đang hoạt động</p>
-                    <h1 className="text-8xl md:text-9xl font-black italic leading-[0.8] tracking-tighter uppercase">PHÚ VINH<br/><span className="text-white/10 italic">DASHBOARD</span></h1>
+                    <p className="text-[#fbbf24] font-bold tracking-[0.5em] uppercase text-sm mb-6">CUNG CHÚC TÂN XUÂN - PHÚ QUÝ CÁT TƯỜNG</p>
+                    <h1 className="text-8xl md:text-[12rem] font-black leading-[0.8] tracking-tighter uppercase chinese-font text-[#fbbf24]">
+                        PHÚ VINH<br/><span className="text-white/10 italic">2026</span>
+                    </h1>
                 </header>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div onClick={() => setView('customers')} className="glass-panel group cursor-pointer p-10 hover:border-[#00ff41] transition-all">
-                        <div className="text-4xl mb-12 bg-white/5 w-16 h-16 flex items-center justify-center rounded-2xl group-hover:bg-[#00ff41] transition-all">👥</div>
-                        <h2 className="text-5xl font-black uppercase italic leading-none tracking-tighter">QL KHÁCH<br/>HÀNG</h2>
+                    <div onClick={() => setView('customers')} className="oriental-panel group cursor-pointer p-10 hover:bg-[#fbbf24] transition-all duration-500">
+                        <div className="text-6xl mb-12 group-hover:scale-125 transition-all">🏮</div>
+                        <h2 className="text-5xl font-black uppercase leading-none tracking-tighter group-hover:text-[#7f1d1d]">QUẢN LÝ<br/>KHÁCH</h2>
                     </div>
-                    <div onClick={() => setView('orders')} className="glass-panel group cursor-pointer p-10 hover:border-blue-500 transition-all">
-                        <div className="text-4xl mb-12 bg-white/5 w-16 h-16 flex items-center justify-center rounded-2xl group-hover:bg-blue-500 transition-all">📦</div>
-                        <h2 className="text-5xl font-black uppercase italic leading-none tracking-tighter">QL ĐƠN<br/>HÀNG</h2>
+                    <div onClick={() => setView('orders')} className="oriental-panel group cursor-pointer p-10 hover:bg-[#fbbf24] transition-all duration-500">
+                        <div className="text-6xl mb-12 group-hover:scale-125 transition-all">🧧</div>
+                        <h2 className="text-5xl font-black uppercase leading-none tracking-tighter group-hover:text-[#7f1d1d]">QUẢN LÝ<br/>ĐƠN</h2>
                     </div>
-                    <div onClick={() => setView('debts')} className="glass-panel group cursor-pointer p-10 hover:border-red-500 transition-all">
-                        <div className="text-4xl mb-12 bg-white/5 w-16 h-16 flex items-center justify-center rounded-2xl group-hover:bg-red-500 transition-all">💰</div>
-                        <h2 className="text-5xl font-black uppercase italic leading-none tracking-tighter">QL CÔNG<br/>NỢ</h2>
+                    <div onClick={() => setView('debts')} className="oriental-panel group cursor-pointer p-10 hover:bg-[#fbbf24] transition-all duration-500">
+                        <div className="text-6xl mb-12 group-hover:scale-125 transition-all">🪙</div>
+                        <h2 className="text-5xl font-black uppercase leading-none tracking-tighter group-hover:text-[#7f1d1d]">QUẢN LÝ<br/>NỢ</h2>
                     </div>
                 </div>
             </div>
         );
 
         // --- 3. BÁO CÁO TỔNG HỢP ---
-        const ReportModule = ({ customers }) => {
-            const [search, setSearch] = useState('');
-            const stats = { delivered: 42, pending: 8, revenue: 2450000 };
-            const selectedCust = customers.find(c => c.name.includes(search.toUpperCase()) && search !== "");
-
-            return (
-                <div className="fade-up max-w-7xl mx-auto px-6 py-12">
-                    <header className="mb-24 border-l-8 border-[#00ff41] pl-10"><h1 className="text-7xl md:text-9xl font-black uppercase italic tracking-tighter leading-none">BÁO CÁO<br/><span className="opacity-20">TỔNG HỢP</span></h1></header>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
-                        <div className="glass-panel p-12"><p className="text-white/40 font-bold uppercase text-[10px] mb-8">Đơn đã giao</p><p className="metric-value text-8xl md:text-9xl">{stats.delivered}</p></div>
-                        <div className="glass-panel p-12"><p className="text-white/40 font-bold uppercase text-[10px] mb-8">Đơn chờ giao</p><p className="metric-value text-8xl md:text-9xl" style={{WebkitTextFillColor: 'unset', color: '#ff6b00'}}>{stats.pending}</p></div>
-                        <div className="glass-panel p-12 bg-white text-black border-none"><p className="text-black/40 font-bold uppercase text-[10px] mb-8">Tổng doanh thu</p><p className="text-4xl md:text-6xl font-black">{stats.revenue.toLocaleString()}đ</p></div>
+        const ReportModule = () => (
+            <div className="fade-up max-w-7xl mx-auto px-6 py-12">
+                <header className="mb-24 border-l-8 border-[#fbbf24] pl-10">
+                    <h1 className="text-7xl md:text-9xl font-black uppercase tracking-tighter leading-none chinese-font">TỔNG KẾT<br/><span className="opacity-20">CUỐI NĂM</span></h1>
+                </header>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
+                    <div className="oriental-panel p-12">
+                        <p className="text-[#fbbf24]/60 font-bold uppercase text-[10px] mb-8">LỘC GIAO TRONG NGÀY</p>
+                        <p className="metric-value text-8xl md:text-9xl">88</p>
                     </div>
-                    <div>
-                        <p className="text-white/40 font-bold uppercase text-xs mb-6 tracking-[0.3em]">Tra cứu nhanh khách hàng</p>
-                        <input className="input-global" placeholder="NHẬP TÊN KHÁCH..." value={search} onChange={(e) => setSearch(e.target.value.toUpperCase())} />
-                        {selectedCust && (
-                            <div className="glass-panel p-12 border-[#00ff41]/40 bg-white/5 fade-up">
-                                <h3 className="text-3xl font-black mb-12 italic text-[#00ff41] uppercase">KẾT QUẢ: {selectedCust.name}</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                                    <div className="border-l border-white/10 pl-8"><p className="text-white/40 text-[10px] font-bold uppercase mb-4">Tổng đã lấy</p><p className="text-5xl font-black">150 <span className="text-xs opacity-20">BÌNH</span></p></div>
-                                    <div className="border-l border-white/10 pl-8"><p className="text-white/40 text-[10px] font-bold uppercase mb-4">Nợ vỏ</p><p className="text-5xl font-black text-red-500">{selectedCust.debtBins}</p></div>
-                                    <div className="border-l border-white/10 pl-8"><p className="text-white/40 text-[10px] font-bold uppercase mb-4">Nợ tiền</p><p className="text-5xl font-black text-red-500">{(selectedCust.debtBins * 50000).toLocaleString()}đ</p></div>
-                                </div>
-                            </div>
-                        )}
+                    <div className="oriental-panel p-12 bg-[#fbbf24] text-[#7f1d1d] border-none shadow-2xl">
+                        <p className="font-bold uppercase text-[10px] mb-8">DOANH THU ĐẠI CÁT</p>
+                        <p className="text-4xl md:text-6xl font-black">8.888.000đ</p>
+                    </div>
+                    <div className="oriental-panel p-12 border-white/10">
+                        <p className="text-white/40 font-bold uppercase text-[10px] mb-8">TỒN ĐỌNG</p>
+                        <p className="text-8xl md:text-9xl font-black opacity-30">09</p>
                     </div>
                 </div>
-            );
-        };
+            </div>
+        );
 
         // --- 4. APP CHÍNH ---
         const App = () => {
             const [view, setView] = useState('menu');
             const [customers, setCustomers] = useState([
-                { id: 1, name: "NGUYỄN VĂN A", phone: "090123456", note: "Giao sau 5h chiều", debtBins: 12 }
+                { id: 1, name: "NGUYỄN VĂN PHÚ", phone: "090123456", note: "Số 8 Đường Lộc Phát", debtBins: 8 }
             ]);
 
             return (
                 <div className="min-h-screen pb-40">
                     {view === 'menu' && <MainMenu setView={setView} />}
                     {view === 'customers' && <CustomerModule customers={customers} setCustomers={setCustomers} />}
-                    {view === 'reports' && <ReportModule customers={customers} />}
+                    {view === 'reports' && <ReportModule />}
                     
                     {['orders', 'debts'].includes(view) && (
                         <div className="fade-up max-w-7xl mx-auto px-6 py-24 text-center">
-                            <h1 className="text-6xl font-black opacity-20 uppercase italic">Module {view}<br/>đang xây dựng...</h1>
+                            <h1 className="text-6xl font-black opacity-20 uppercase italic chinese-font">ĐANG KHAI TRƯƠNG...</h1>
                         </div>
                     )}
 
-                    <nav className="fixed bottom-10 left-1/2 -translate-x-1/2 flex gap-2 glass-panel p-2 z-50 border-white/20">
-                        <button onClick={() => setView('menu')} className={`nav-btn ${view === 'menu' ? 'nav-active' : 'nav-inactive'}`}>Bảng điều khiển</button>
-                        <button onClick={() => setView('reports')} className={`nav-btn ${view === 'reports' ? 'nav-active' : 'nav-inactive'}`}>Báo cáo</button>
+                    <nav className="fixed bottom-10 left-1/2 -translate-x-1/2 flex gap-3 oriental-panel p-3 z-50 border-[#fbbf24]/40 bg-[#7f1d1d]/90">
+                        <button onClick={() => setView('menu')} className={`nav-btn ${view === 'menu' ? 'nav-active' : 'nav-inactive'}`}>ĐIỀU HÀNH</button>
+                        <button onClick={() => setView('reports')} className={`nav-btn ${view === 'reports' ? 'nav-active' : 'nav-inactive'}`}>TỔNG KẾT</button>
                     </nav>
                 </div>
             );
