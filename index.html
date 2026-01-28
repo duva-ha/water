@@ -3,206 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÚ VINH | XUÂN GIÁP THÌN 2026</title>
+    <title>PHÚ VINH | CLASSIC LUXURY</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+QingKe+HuangYou&family=Inter:wght@400;900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@900&family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --tet-red: #b91c1c; /* Đỏ đô */
-            --tet-gold: #fbbf24; /* Vàng kim */
+            --cin-red: #991b1b; /* Đỏ chu sa */
+            --ebony: #0a0a0a;   /* Đen huyền */
+            --gold: #d4af37;    /* Vàng lá */
         }
         body { 
             font-family: 'Inter', sans-serif; 
-            background-color: #450a0a; /* Nền đỏ cực đậm */
-            background-image: url("https://www.transparenttextures.com/patterns/dark-matter.png"); /* Họa tiết chìm */
+            background-color: var(--ebony); 
             color: #fef3c7;
-            letter-spacing: -0.01em;
             overflow-x: hidden;
         }
-        /* Card phong cách Trung Hoa */
-        .oriental-panel {
-            background: rgba(185, 28, 28, 0.15);
-            backdrop-filter: blur(15px);
-            border: 2px solid #fbbf24;
-            border-radius: 1rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 20px rgba(251, 191, 36, 0.1);
-            position: relative;
+        /* Panel phong cách tối giản Trung Hoa */
+        .luxury-panel {
+            background: linear-gradient(145deg, rgba(153, 27, 27, 0.1), rgba(0, 0, 0, 0.4));
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            border-left: 6px solid var(--gold);
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
         }
-        /* Họa tiết góc kiểu Trung Hoa */
-        .oriental-panel::before {
-            content: '🧧'; position: absolute; top: 10px; right: 10px; opacity: 0.5;
+        .luxury-panel:hover {
+            border-left: 12px solid var(--gold);
+            background: rgba(153, 27, 27, 0.2);
         }
-        .metric-value {
-            font-weight: 900;
-            line-height: 0.9;
-            color: #fbbf24;
-            text-shadow: 2px 2px 0px #7f1d1d, 4px 4px 15px rgba(251, 191, 36, 0.4);
+        .chinese-title {
+            font-family: 'Noto Serif SC', serif;
+            letter-spacing: -0.05em;
         }
-        .input-oriental {
-            @apply bg-transparent border-b-4 border-[#fbbf24]/30 text-4xl md:text-6xl font-bold py-6 outline-none transition-all duration-300 w-full mb-12 focus:border-[#fbbf24] text-[#fbbf24] placeholder-[#fbbf24]/30;
+        .huge-input-modern {
+            @apply bg-transparent border-b-2 border-white/10 text-5xl md:text-7xl font-bold py-6 outline-none transition-all duration-500 w-full mb-12 focus:border-[#d4af37] text-[#d4af37] placeholder-white/5;
         }
-        .chinese-font { font-family: 'ZCOOL+QingKe+HuangYou', cursive; }
-        .fade-up { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .nav-btn { @apply px-8 py-4 rounded-lg font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-300 border border-[#fbbf24]/20; }
-        .nav-active { @apply bg-[#fbbf24] text-[#7f1d1d] shadow-[0_0_20px_rgba(251,191,36,0.4)]; }
-        .nav-inactive { @apply text-[#fbbf24]/60 hover:text-[#fbbf24] bg-[#7f1d1d]/40; }
+        .gold-text {
+            background: linear-gradient(180deg, #fde68a 0%, #d4af37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .nav-capsule {
+            background: rgba(10, 10, 10, 0.8);
+            border: 1px solid rgba(212, 175, 55, 0.5);
+            border-radius: 999px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+        .fade-up { animation: fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect } = React;
+        const { useState } = React;
 
-        // --- 1. MODULE QUẢN LÝ KHÁCH HÀNG ---
-        const CustomerModule = ({ customers, setCustomers }) => {
-            const [form, setForm] = useState({ id: null, name: '', phone: '', note: '' });
-            const [search, setSearch] = useState('');
-            const [isEditing, setIsEditing] = useState(false);
+        const App = () => {
+            const [view, setView] = useState('menu');
+            const [customers, setCustomers] = useState([
+                { id: 1, name: "NGUYỄN PHÚ VINH", phone: "0901.888.999", note: "Quận 1, TP.HCM", debt: 12 }
+            ]);
 
-            const handleSave = () => {
-                if (!form.name || !form.phone) return alert("HÃY NHẬP ĐỦ TÊN VÀ SĐT!");
-                if (isEditing) {
-                    setCustomers(customers.map(c => c.id === form.id ? { ...form, name: form.name.toUpperCase() } : c));
-                    setIsEditing(false);
-                } else {
-                    setCustomers([{ ...form, id: Date.now(), name: form.name.toUpperCase() }, ...customers]);
-                }
-                setForm({ id: null, name: '', phone: '', note: '' });
-            };
-
-            const filtered = customers.filter(c => c.name.includes(search.toUpperCase()));
-
-            return (
-                <div className="fade-up max-w-7xl mx-auto px-6 py-12">
-                    <header className="mb-16 border-l-8 border-[#fbbf24] pl-8">
-                        <p className="text-[#fbbf24] font-bold tracking-[0.4em] uppercase text-xs mb-2 italic">NHÂN HÒA - VẠN SỰ THÀNH</p>
-                        <h1 className="text-6xl md:text-8xl font-black uppercase tracking-tighter chinese-font">DANH GIA<br/>KHÁCH HÀNG</h1>
+            // --- BẢNG ĐIỀU KHIỂN ---
+            const MainMenu = () => (
+                <div className="fade-up max-w-7xl mx-auto px-8 py-20">
+                    <header className="mb-32 relative">
+                        <div className="absolute -left-10 top-0 h-full w-2 bg-red-800"></div>
+                        <p className="text-[#d4af37] font-bold tracking-[0.5em] uppercase text-xs mb-6 opacity-60 italic">Standard Management System</p>
+                        <h1 className="text-8xl md:text-[11rem] font-black leading-[0.85] uppercase chinese-title gold-text">
+                            PHÚ VINH<br/><span className="text-white/5">CLASSIC</span>
+                        </h1>
                     </header>
 
-                    <div className="oriental-panel p-10 mb-20">
-                        <p className="text-[#fbbf24]/60 font-bold uppercase text-[10px] mb-8 tracking-widest italic">{isEditing ? "🏮 CHỈNH SỬA THÔNG TIN" : "🏮 THÊM MỚI THÀNH VIÊN"}</p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 mb-10">
-                            <input className="input-oriental !mb-0 !text-3xl" placeholder="DANH TÁNH..." value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
-                            <input className="input-oriental !mb-0 !text-3xl" placeholder="LIÊN LẠC..." type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+                        <div onClick={() => setView('customers')} className="luxury-panel p-12 cursor-pointer group">
+                            <p className="text-white/20 font-black text-xs mb-16 tracking-[0.3em]">01 / KHÁCH HÀNG</p>
+                            <h2 className="text-5xl font-black uppercase italic leading-none chinese-title group-hover:gold-text">QUẢN LÝ<br/>NHÂN TÁNH</h2>
                         </div>
-                        <input className="input-oriental !text-2xl" placeholder="GHI CHÚ ĐỊA CHỈ..." value={form.note} onChange={e => setForm({...form, note: e.target.value})} />
-                        <div className="flex gap-4">
-                            <button onClick={handleSave} className="h-20 flex-1 bg-[#fbbf24] text-[#7f1d1d] rounded-xl font-black text-xl uppercase tracking-tighter active:scale-95 transition-all shadow-lg">
-                                {isEditing ? "CẬP NHẬT THÔNG TIN" : "LƯU VÀO SỔ SÁCH +"}
-                            </button>
+                        <div onClick={() => setView('orders')} className="luxury-panel p-12 cursor-pointer group">
+                            <p className="text-white/20 font-black text-xs mb-16 tracking-[0.3em]">02 / ĐƠN HÀNG</p>
+                            <h2 className="text-5xl font-black uppercase italic leading-none chinese-title group-hover:gold-text">VẬN HÀNH<br/>GIAO DỊCH</h2>
                         </div>
-                    </div>
-
-                    <div className="mb-10 flex flex-col md:flex-row justify-between items-end gap-6">
-                        <div className="w-full md:w-1/2">
-                            <input className="bg-[#7f1d1d]/40 border border-[#fbbf24]/30 rounded-xl px-6 py-4 w-full outline-none focus:border-[#fbbf24] font-bold text-[#fbbf24]" placeholder="TÌM KIẾM DANH TÁNH..." onChange={e => setSearch(e.target.value)} />
+                        <div onClick={() => setView('debts')} className="luxury-panel p-12 cursor-pointer group">
+                            <p className="text-white/20 font-black text-xs mb-16 tracking-[0.3em]">03 / CÔNG NỢ</p>
+                            <h2 className="text-5xl font-black uppercase italic leading-none chinese-title group-hover:gold-text">KIỂM SOÁT<br/>TÀI CHÍNH</h2>
                         </div>
                     </div>
+                </div>
+            );
 
-                    <div className="grid grid-cols-1 gap-6">
-                        {filtered.map(c => (
-                            <div key={c.id} className="oriental-panel p-8 flex flex-col md:flex-row justify-between items-center gap-6 hover:bg-[#fbbf24]/10 transition-all border-[#fbbf24]/40">
-                                <div className="flex-1">
-                                    <h3 className="text-4xl font-black tracking-tighter uppercase mb-2 text-[#fbbf24]">{c.name}</h3>
-                                    <div className="flex gap-6 text-[#fbbf24]/60 font-bold text-sm uppercase">
-                                        <span>☎️ {c.phone}</span>
-                                        <span>🏠 {c.note || "Chưa có địa chỉ"}</span>
-                                    </div>
+            // --- MODULE KHÁCH HÀNG ---
+            const CustomerModule = () => (
+                <div className="fade-up max-w-6xl mx-auto px-8 py-16">
+                    <h1 className="text-6xl font-black italic mb-20 chinese-title gold-text">/ HỒ SƠ KHÁCH HÀNG</h1>
+                    
+                    <div className="mb-24">
+                        <input className="huge-input-modern" placeholder="HỌ TÊN ĐỐI TÁC..." />
+                        <input className="huge-input-modern" placeholder="LIÊN LẠC (SĐT)..." />
+                        <button className="h-[100px] w-full bg-[#d4af37] text-black font-black text-3xl uppercase tracking-tighter hover:bg-[#fde68a] transition-all shadow-2xl">
+                            XÁC NHẬN LƯU TRỮ +
+                        </button>
+                    </div>
+
+                    <div className="space-y-6">
+                        {customers.map(c => (
+                            <div key={c.id} className="luxury-panel p-8 border-none flex justify-between items-center bg-white/5">
+                                <div>
+                                    <p className="text-4xl font-black uppercase chinese-title mb-2">{c.name}</p>
+                                    <p className="text-lg text-white/30 font-bold tracking-widest">{c.phone}</p>
                                 </div>
-                                <div className="flex gap-3">
-                                    <button onClick={() => handleEdit(c)} className="bg-[#fbbf24]/10 border border-[#fbbf24] text-[#fbbf24] px-8 py-3 rounded-lg font-black text-[10px] uppercase">Sửa</button>
-                                </div>
+                                <button className="border border-[#d4af37]/30 text-[#d4af37] px-8 py-3 rounded-none font-black text-[10px] uppercase hover:bg-[#d4af37] hover:text-black transition-all">CHI TIẾT</button>
                             </div>
                         ))}
                     </div>
                 </div>
             );
-        };
-
-        // --- 2. BẢNG ĐIỀU KHIỂN ---
-        const MainMenu = ({ setView }) => (
-            <div className="fade-up max-w-7xl mx-auto px-6 py-12 text-center md:text-left">
-                <header className="mb-20">
-                    <p className="text-[#fbbf24] font-bold tracking-[0.5em] uppercase text-sm mb-6">CUNG CHÚC TÂN XUÂN - PHÚ QUÝ CÁT TƯỜNG</p>
-                    <h1 className="text-8xl md:text-[12rem] font-black leading-[0.8] tracking-tighter uppercase chinese-font text-[#fbbf24]">
-                        PHÚ VINH<br/><span className="text-white/10 italic">2026</span>
-                    </h1>
-                </header>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div onClick={() => setView('customers')} className="oriental-panel group cursor-pointer p-10 hover:bg-[#fbbf24] transition-all duration-500">
-                        <div className="text-6xl mb-12 group-hover:scale-125 transition-all">🏮</div>
-                        <h2 className="text-5xl font-black uppercase leading-none tracking-tighter group-hover:text-[#7f1d1d]">QUẢN LÝ<br/>KHÁCH</h2>
-                    </div>
-                    <div onClick={() => setView('orders')} className="oriental-panel group cursor-pointer p-10 hover:bg-[#fbbf24] transition-all duration-500">
-                        <div className="text-6xl mb-12 group-hover:scale-125 transition-all">🧧</div>
-                        <h2 className="text-5xl font-black uppercase leading-none tracking-tighter group-hover:text-[#7f1d1d]">QUẢN LÝ<br/>ĐƠN</h2>
-                    </div>
-                    <div onClick={() => setView('debts')} className="oriental-panel group cursor-pointer p-10 hover:bg-[#fbbf24] transition-all duration-500">
-                        <div className="text-6xl mb-12 group-hover:scale-125 transition-all">🪙</div>
-                        <h2 className="text-5xl font-black uppercase leading-none tracking-tighter group-hover:text-[#7f1d1d]">QUẢN LÝ<br/>NỢ</h2>
-                    </div>
-                </div>
-            </div>
-        );
-
-        // --- 3. BÁO CÁO TỔNG HỢP ---
-        const ReportModule = () => (
-            <div className="fade-up max-w-7xl mx-auto px-6 py-12">
-                <header className="mb-24 border-l-8 border-[#fbbf24] pl-10">
-                    <h1 className="text-7xl md:text-9xl font-black uppercase tracking-tighter leading-none chinese-font">TỔNG KẾT<br/><span className="opacity-20">CUỐI NĂM</span></h1>
-                </header>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
-                    <div className="oriental-panel p-12">
-                        <p className="text-[#fbbf24]/60 font-bold uppercase text-[10px] mb-8">LỘC GIAO TRONG NGÀY</p>
-                        <p className="metric-value text-8xl md:text-9xl">88</p>
-                    </div>
-                    <div className="oriental-panel p-12 bg-[#fbbf24] text-[#7f1d1d] border-none shadow-2xl">
-                        <p className="font-bold uppercase text-[10px] mb-8">DOANH THU ĐẠI CÁT</p>
-                        <p className="text-4xl md:text-6xl font-black">8.888.000đ</p>
-                    </div>
-                    <div className="oriental-panel p-12 border-white/10">
-                        <p className="text-white/40 font-bold uppercase text-[10px] mb-8">TỒN ĐỌNG</p>
-                        <p className="text-8xl md:text-9xl font-black opacity-30">09</p>
-                    </div>
-                </div>
-            </div>
-        );
-
-        // --- 4. APP CHÍNH ---
-        const App = () => {
-            const [view, setView] = useState('menu');
-            const [customers, setCustomers] = useState([
-                { id: 1, name: "NGUYỄN VĂN PHÚ", phone: "090123456", note: "Số 8 Đường Lộc Phát", debtBins: 8 }
-            ]);
 
             return (
                 <div className="min-h-screen pb-40">
-                    {view === 'menu' && <MainMenu setView={setView} />}
-                    {view === 'customers' && <CustomerModule customers={customers} setCustomers={setCustomers} />}
-                    {view === 'reports' && <ReportModule />}
+                    {view === 'menu' && <MainMenu />}
+                    {view === 'customers' && <CustomerModule />}
                     
-                    {['orders', 'debts'].includes(view) && (
-                        <div className="fade-up max-w-7xl mx-auto px-6 py-24 text-center">
-                            <h1 className="text-6xl font-black opacity-20 uppercase italic chinese-font">ĐANG KHAI TRƯƠNG...</h1>
-                        </div>
-                    )}
-
-                    <nav className="fixed bottom-10 left-1/2 -translate-x-1/2 flex gap-3 oriental-panel p-3 z-50 border-[#fbbf24]/40 bg-[#7f1d1d]/90">
-                        <button onClick={() => setView('menu')} className={`nav-btn ${view === 'menu' ? 'nav-active' : 'nav-inactive'}`}>ĐIỀU HÀNH</button>
-                        <button onClick={() => setView('reports')} className={`nav-btn ${view === 'reports' ? 'nav-active' : 'nav-inactive'}`}>TỔNG KẾT</button>
+                    {/* Thanh điều hướng tối giản */}
+                    <nav className="fixed bottom-12 left-1/2 -translate-x-1/2 nav-capsule p-2 flex gap-2 z-50">
+                        <button onClick={() => setView('menu')} className={`px-10 py-4 rounded-full font-black text-[10px] uppercase tracking-widest transition-all ${view === 'menu' ? 'bg-[#d4af37] text-black' : 'text-white/40 hover:text-white'}`}>Hệ Thống</button>
+                        <button onClick={() => setView('reports')} className={`px-10 py-4 rounded-full font-black text-[10px] uppercase tracking-widest transition-all ${view === 'reports' ? 'bg-[#d4af37] text-black' : 'text-white/40 hover:text-white'}`}>Báo Cáo</button>
                     </nav>
                 </div>
             );
         };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
     </script>
 </body>
 </html>
