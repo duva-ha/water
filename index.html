@@ -2,61 +2,101 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giviso Water - Fixed</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Giviso Mobile OS</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; background: #fdfdfd; touch-action: manipulation; }
+        .responsive-container { @apply w-[95%] max-w-[1200px] mx-auto pt-6 pb-32; }
+        .huge-control { @apply h-[80px] text-2xl md:text-3xl font-black uppercase rounded-2xl border-[5px] border-black px-6 transition-all; }
+        .input-huge { @apply bg-white outline-none focus:ring-8 focus:ring-yellow-400 w-full tracking-tighter; }
+        .btn-huge { @apply bg-black text-[#ccff00] hover:bg-zinc-800 active:scale-95 flex items-center justify-center border-none shadow-[8px_8px_0px_0px_rgba(0,0,0,0.2)]; }
+        .column-header { @apply text-xs font-black uppercase tracking-[0.2em] text-zinc-400 mb-2 ml-2 italic block; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body>
     <div id="root"></div>
 
-    <script type="text/babel" data-type="module">
-        // 1. Nhập CustomerModule từ file bạn đã tách
-        import { CustomerModule } from "./src/modules/CustomerModule.js";
+    <script type="text/babel">
+        const { useState, useEffect } = React;
 
-        const { useState } = React;
+        // --- MÔ ĐUN KHÁCH HÀNG (DỮ LIỆU ĐƯỢC QUẢN LÝ TẠI ĐÂY) ---
+        const CustomerModule = ({ customers, setCustomers }) => {
+            const [form, setForm] = useState({ name: '', phone: '' });
 
-        // 2. Giao diện Menu chính (Viết trực tiếp ở đây để đảm bảo nó hiện lên trước)
-        const MainMenu = ({ setView }) => (
-            <div className="p-8 max-w-4xl mx-auto">
-                <h1 className="text-7xl font-black italic mb-10 tracking-tighter uppercase">Giviso OS</h1>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div 
-                        onClick={() => setView('customers')}
-                        className="bg-[#ccff00] border-[5px] border-black p-10 rounded-[2.5rem] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] cursor-pointer active:scale-95 transition-all"
-                    >
-                        <h2 className="text-4xl font-black uppercase italic">Khách Hàng</h2>
-                    </div>
-                    {/* Thêm các ô Đơn hàng, Công nợ ở đây sau */}
-                </div>
-            </div>
-        );
-
-        // 3. App chính điều phối
-        const App = () => {
-            const [view, setView] = useState('menu');
+            const handleSave = () => {
+                if (!form.name || !form.phone) return alert("NHẬP ĐỦ THÔNG TIN!");
+                setCustomers([{ id: Date.now(), ...form, name: form.name.toUpperCase() }, ...customers]);
+                setForm({ name: '', phone: '' });
+            };
 
             return (
-                <div className="min-h-screen bg-[#fdfdfd]">
-                    {view === 'menu' && <MainMenu setView={setView} />}
-                    {view === 'customers' && (
+                <div className="fade-in responsive-container">
+                    <h1 className="text-5xl md:text-8xl font-black mb-16 italic border-b-[15px] border-[#ccff00] inline-block tracking-tighter uppercase">Khách Hàng /</h1>
+                    
+                    <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 mb-20 items-end">
+                        <div className="xl:col-span-5">
+                            <span className="column-header">Họ Tên Khách Hàng</span>
+                            <input className="huge-control input-huge" placeholder="VÍ DỤ: NGUYỄN VĂN A" value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
+                        </div>
+                        <div className="xl:col-span-4">
+                            <span className="column-header">Số Điện Thoại</span>
+                            <input className="huge-control input-huge" placeholder="090..." type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
+                        </div>
+                        <div className="xl:col-span-3">
+                            <button onClick={handleSave} className="huge-control btn-huge w-full">LƯU KHÁCH +</button>
+                        </div>
+                    </div>
+
+                    <div className="space-y-6">
+                        {customers.map(c => (
+                            <div key={c.id} className="bg-white border-[6px] border-black p-8 rounded-[3rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] grid grid-cols-1 md:grid-cols-12 items-center gap-6">
+                                <div className="md:col-span-7"><p className="text-4xl md:text-6xl font-black uppercase italic leading-none tracking-tighter">{c.name}</p></div>
+                                <div className="md:col-span-5 flex justify-between items-center"><p className="text-3xl md:text-5xl font-bold text-zinc-400 italic tracking-tighter">{c.phone}</p></div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        // --- APP CHÍNH (ĐIỀU PHỐI) ---
+        const App = () => {
+            const [view, setView] = useState('menu');
+            const [customers, setCustomers] = useState([{ id: 1, name: "NGUYỄN VĂN A", phone: "090123" }]);
+
+            return (
+                <div className="min-h-screen">
+                    {view === 'menu' ? (
+                        <div className="fade-in responsive-container">
+                            <h1 className="text-6xl md:text-9xl font-black italic tracking-tighter leading-none mb-12 uppercase">Giviso<br/><span className="text-blue-600 underline">System</span></h1>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div onClick={() => setView('customers')} className="border-[5px] border-black rounded-[2.5rem] p-8 bg-[#ccff00] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] cursor-pointer active:scale-95 transition-all">
+                                    <span className="text-6xl mb-6 block">👥</span>
+                                    <h2 className="text-4xl md:text-5xl font-black uppercase italic">Khách Hàng</h2>
+                                </div>
+                                <div className="border-[5px] border-black rounded-[2.5rem] p-8 bg-[#ff00ff] text-white shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] cursor-not-allowed opacity-50">
+                                    <span className="text-6xl mb-6 block">📦</span>
+                                    <h2 className="text-4xl md:text-5xl font-black uppercase italic">Đơn Hàng</h2>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
                         <div>
-                            <CustomerModule />
-                            <button 
-                                onClick={() => setView('menu')}
-                                className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black text-[#ccff00] px-12 py-5 rounded-full font-black uppercase border-4 border-black z-50 shadow-2xl"
-                            >
-                                ⬅ Quay Lại
-                            </button>
+                            {view === 'customers' && <CustomerModule customers={customers} setCustomers={setCustomers} />}
+                            <button onClick={() => setView('menu')} className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black text-white font-black px-12 py-5 rounded-full border-4 border-black z-50 text-xl uppercase shadow-2xl active:scale-90 transition-all">⬅ Quay Lại Menu</button>
                         </div>
                     )}
                 </div>
             );
         };
 
-        // 4. Kích hoạt React (Đảm bảo dòng này nằm cuối cùng)
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
