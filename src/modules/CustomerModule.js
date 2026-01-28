@@ -1,5 +1,6 @@
+// Nhập kết nối database từ file cấu hình đã tách
 import { db } from "../firebase.js"; 
-// Lưu ý: Phải có đuôi .js và các hàm Firestore được import trực tiếp từ CDN nếu firebase.js chưa export chúng
+// Nhập các hàm Firestore trực tiếp từ CDN để đảm bảo tính tương thích trên web
 import { 
     collection, 
     onSnapshot, 
@@ -16,7 +17,7 @@ export const CustomerModule = () => {
     const [customers, setCustomers] = useState([]);
     const [form, setForm] = useState({ name: '', phone: '' });
 
-    // 1. Lắng nghe dữ liệu thời gian thực từ Firestore
+    // 1. Tự động cập nhật danh sách khách hàng từ Firebase
     useEffect(() => {
         const q = query(collection(db, "customers"), orderBy("name", "asc"));
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -26,38 +27,38 @@ export const CustomerModule = () => {
         return () => unsubscribe();
     }, []);
 
-    // 2. Hàm lưu khách hàng
+    // 2. Logic Lưu khách hàng mới với chữ in hoa
     const handleSave = async () => {
         if (!form.name || !form.phone) {
-            alert("NHẬP ĐỦ TÊN VÀ SĐT!");
+            alert("VUI LÒNG NHẬP ĐỦ TÊN VÀ SĐT!");
             return;
         }
         try {
             await addDoc(collection(db, "customers"), {
-                name: form.name.toUpperCase(),
+                name: form.name.toUpperCase(), // Viết hoa tên khách hàng
                 phone: form.phone,
                 createdAt: new Date()
             });
-            setForm({ name: '', phone: '' });
-        } catch (e) {
-            console.error("Lỗi lưu khách: ", e);
+            setForm({ name: '', phone: '' }); // Xóa form sau khi lưu thành công
+        } catch (error) {
+            console.error("Lỗi khi lưu khách hàng:", error);
         }
     };
 
-    // 3. Hàm xóa khách hàng
+    // 3. Logic Xóa khách hàng
     const handleDelete = async (id) => {
-        if (confirm("XÁC NHẬN XÓA KHÁCH HÀNG NÀY?")) {
+        if (window.confirm("BẠN CÓ CHẮC CHẮN MUỐN XÓA?")) {
             await deleteDoc(doc(db, "customers", id));
         }
     };
 
     return (
-        <div className="fade-in w-full max-w-[1400px] mx-auto p-4 md:p-10">
+        <div className="fade-in w-full max-w-[1400px] mx-auto p-4 md:p-8">
             <h1 className="text-5xl md:text-8xl font-black mb-16 italic border-b-[15px] border-[#ccff00] inline-block tracking-tighter uppercase">
                 Khách Hàng /
             </h1>
             
-            {/* NHẬP LIỆU: HUGE INPUT & NÚT LƯU CÙNG HÀNG */}
+            {/* KHU VỰC NHẬP LIỆU: HUGE INPUT & NÚT LƯU CÙNG HÀNG */}
             <div className="grid grid-cols-1 xl:grid-cols-12 gap-4 mb-20 items-end">
                 <div className="xl:col-span-5">
                     <label className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400 mb-2 ml-2 italic block">Họ Tên Khách Hàng</label>
@@ -88,7 +89,7 @@ export const CustomerModule = () => {
                 </div>
             </div>
 
-            {/* DANH SÁCH THẺ KHÁCH HÀNG */}
+            {/* DANH SÁCH KHÁCH HÀNG DẠNG THẺ (CARD-BASED) */}
             <div className="space-y-6">
                 <div className="hidden md:grid grid-cols-12 px-10 mb-4 text-xs font-black uppercase tracking-[0.2em] text-zinc-400 italic">
                     <div className="col-span-7">Tên Khách Hàng</div>
@@ -96,7 +97,7 @@ export const CustomerModule = () => {
                 </div>
                 
                 {customers.map((c) => (
-                    <div key={c.id} className="bg-white border-[6px] border-black p-8 rounded-[3rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] grid grid-cols-1 md:grid-cols-12 items-center gap-6">
+                    <div key={c.id} className="bg-white border-[6px] border-black p-8 rounded-[3rem] shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] grid grid-cols-1 md:grid-cols-12 items-center gap-6 transition-transform hover:scale-[1.01]">
                         <div className="md:col-span-7">
                             <p className="text-4xl md:text-6xl font-black uppercase leading-none tracking-tighter italic">{c.name}</p>
                         </div>
