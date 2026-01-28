@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÚ VINH OS | HỆ THỐNG QUẢN TRỊ TOÀN DIỆN</title>
+    <title>CSSX PHÚ VINH </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -15,7 +15,6 @@
         :root { --gold: #d4af37; }
         body { font-family: 'Inter', sans-serif; background-color: #050505; color: #fef3c7; overflow-x: hidden; }
         .chinese-title { font-family: 'Noto Serif SC', serif; }
-        /* Ô NHẬP LIỆU: TRẮNG - CHỮ ĐEN ĐẬM */
         .input-pro { background-color: #ffffff !important; color: #000000 !important; font-weight: 900 !important; height: 50px; padding: 0 15px; border-radius: 8px; width: 100%; border: none; outline: none; font-size: 1rem; }
         .luxury-panel { background: linear-gradient(145deg, rgba(153, 27, 27, 0.05), rgba(0, 0, 0, 0.6)); border: 1px solid rgba(212, 175, 55, 0.2); border-left: 5px solid var(--gold); backdrop-filter: blur(10px); }
         .gold-text { background: linear-gradient(180deg, #fde68a 0%, #d4af37 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -34,15 +33,27 @@
         const PRICE_BINH = 7500;
         const PRICE_LOC = 14000;
 
-        // --- CẤU HÌNH FIREBASE (DÁN TẠI ĐÂY) ---
-        const firebaseConfig = { apiKey: "AIza...", projectId: "..." }; 
-        if (!firebase.apps.length && firebaseConfig.apiKey !== "AIza...") firebase.initializeApp(firebaseConfig);
-        const db = firebaseConfig.apiKey !== "AIza..." ? firebase.firestore() : null;
+        // --- CẤU HÌNH FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDQmerSSs0qhO01xNnFWpquZYseDThWxP0",
+  authDomain: "lichtruc-e3f82.firebaseapp.com",
+  projectId: "lichtruc-e3f82",
+  storageBucket: "lichtruc-e3f82.firebasestorage.app",
+  messagingSenderId: "476557236437",
+  appId: "1:476557236437:web:dfb1cb5848642daecdaa5c",
+  measurementId: "G-QYQCZCLWR4"
+        };
+
+        if (!firebase.apps.length && firebaseConfig.apiKey !== "AIzaSy...") {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebaseConfig.apiKey !== "AIzaSy..." ? firebase.firestore() : null;
 
         const App = () => {
             const [view, setView] = useState('menu');
-            const [customers, setCustomers] = useState([{ id: 1, name: "NGUYỄN PHÚ VINH", phone: "0901888999", note: "Quận 1" }]);
+            const [customers, setCustomers] = useState([]);
             const [orders, setOrders] = useState([]);
+            const [loading, setLoading] = useState(true);
             const [form, setForm] = useState({ id: null, name: '', phone: '', note: '' });
             const [orderForm, setOrderForm] = useState({ customerId: '', qtyBinh: '', qtyLoc: '' });
             const [tempReturn, setTempReturn] = useState({});
@@ -50,60 +61,86 @@
             const [timeFilter, setTimeFilter] = useState('all');
             const [custFilter, setCustFilter] = useState('all');
 
-            // --- LOGIC QUẢN LÝ KHÁCH HÀNG (THÊM/SỬA/XÓA) ---
-            const handleSaveCustomer = () => {
+            // --- ĐỒNG BỘ FIREBASE ---
+            useEffect(() => {
+                if (!db) return setLoading(false);
+                const unsubCust = db.collection("customers").onSnapshot(s => setCustomers(s.docs.map(d => ({id: d.id, ...d.data()}))));
+                const unsubOrd = db.collection("orders").orderBy("timestamp", "desc").onSnapshot(s => {
+                    setOrders(s.docs.map(d => ({id: d.id, ...d.data()})));
+                    setLoading(false);
+                });
+                return () => { unsubCust(); unsubOrd(); };
+            }, []);
+
+            if (!db && loading === false) return (
+                <div className="h-screen flex flex-col items-center justify-center p-10 text-center">
+                    <h1 className="text-red-500 text-3xl font-black mb-4 uppercase">Lỗi cấu hình Firebase</h1>
+                    <p className="opacity-60">Vui lòng dán apiKey và projectId chính xác vào file index.html</p>
+                </div>
+            );
+
+            // --- XỬ LÝ KHÁCH HÀNG ---
+            const saveCustomer = async () => {
                 if (!form.name || !form.phone) return alert("HÃY NHẬP ĐỦ TÊN VÀ SĐT!");
-                if (form.id) setCustomers(customers.map(c => c.id === form.id ? {...form, name: form.name.toUpperCase()} : c));
-                else setCustomers([{...form, id: Date.now(), name: form.name.toUpperCase()}, ...customers]);
+                const data = { name: form.name.toUpperCase(), phone: form.phone, note: form.note };
+                if (form.id) await db.collection("customers").doc(form.id).update(data);
+                else await db.collection("customers").add(data);
                 setForm({ id: null, name: '', phone: '', note: '' });
             };
 
-            // --- LOGIC ĐƠN HÀNG & GIAO HÀNG ---
-            const handleAddOrder = () => {
+            // --- XỬ LÝ ĐƠN HÀNG ---
+            const addOrder = async () => {
                 if (!orderForm.customerId || (!orderForm.qtyBinh && !orderForm.qtyLoc)) return alert("CHƯA CHỌN KHÁCH HOẶC HÀNG!");
-                const cust = customers.find(c => c.id.toString() === orderForm.customerId);
+                const cust = customers.find(c => c.id === orderForm.customerId);
                 const qB = parseInt(orderForm.qtyBinh || 0);
                 const qL = parseInt(orderForm.qtyLoc || 0);
-                const newOrder = {
-                    id: Date.now(), timestamp: new Date().toISOString(), customerId: orderForm.customerId,
-                    customerName: cust.name, date: new Date().toLocaleString('vi-VN'),
-                    qtyBinh: qB, qtyLoc: qL, totalAmount: (qB * PRICE_BINH) + (qL * PRICE_LOC),
-                    isCompleted: false, returnBins: 0, debtBins: 0, collectedCash: 0, debtCash: 0
-                };
-                setOrders([newOrder, ...orders]);
+                await db.collection("orders").add({
+                    timestamp: new Date().toISOString(),
+                    customerId: orderForm.customerId,
+                    customerName: cust.name,
+                    date: new Date().toLocaleString('vi-VN'),
+                    qtyBinh: qB,
+                    qtyLoc: qL,
+                    totalAmount: (qB * PRICE_BINH) + (qL * PRICE_LOC),
+                    isCompleted: false,
+                    returnBins: 0, debtBins: 0, collectedCash: 0, debtCash: 0
+                });
                 setOrderForm({ customerId: '', qtyBinh: '', qtyLoc: '' });
             };
 
-            const confirmDelivery = (id) => {
+            const confirmDelivery = async (id) => {
                 const rB = parseInt(tempReturn[id] || 0);
                 const rC = parseInt(tempCash[id] || 0);
-                setOrders(orders.map(o => o.id === id ? { 
-                    ...o, isCompleted: true, returnBins: rB, debtBins: o.qtyBinh - rB, 
-                    collectedCash: rC, debtCash: o.totalAmount - rC 
-                } : o));
+                const order = orders.find(o => o.id === id);
+                await db.collection("orders").doc(id).update({
+                    isCompleted: true,
+                    returnBins: rB,
+                    debtBins: order.qtyBinh - rB,
+                    collectedCash: rC,
+                    debtCash: order.totalAmount - rC
+                });
             };
 
-            // --- LOGIC BÁO CÁO THÔNG MINH (LỌC TRUY VẤN) ---
-            const filteredOrders = useMemo(() => {
+            // --- BÁO CÁO THÔNG MINH ---
+            const stats = useMemo(() => {
                 const now = new Date();
-                return orders.filter(o => {
+                const filtered = orders.filter(o => {
                     const oDate = new Date(o.timestamp);
-                    const timeMatch = timeFilter === 'day' ? oDate.toDateString() === now.toDateString() :
-                                     timeFilter === 'month' ? (oDate.getMonth() === now.getMonth() && oDate.getFullYear() === now.getFullYear()) :
-                                     timeFilter === 'year' ? oDate.getFullYear() === now.getFullYear() : true;
-                    const custMatch = custFilter === 'all' || o.customerId === custFilter;
-                    return timeMatch && custMatch;
+                    const tMatch = timeFilter === 'day' ? oDate.toDateString() === now.toDateString() :
+                                   timeFilter === 'month' ? (oDate.getMonth() === now.getMonth() && oDate.getFullYear() === now.getFullYear()) :
+                                   timeFilter === 'year' ? oDate.getFullYear() === now.getFullYear() : true;
+                    const cMatch = custFilter === 'all' || o.customerId === custFilter;
+                    return tMatch && cMatch;
                 });
+                return filtered.reduce((acc, o) => {
+                    acc.total++;
+                    if (o.isCompleted) {
+                        acc.done++; acc.rev += o.totalAmount; acc.cash += o.collectedCash;
+                        acc.dB += o.debtBins; acc.dC += o.debtCash;
+                    } else acc.pending++;
+                    return acc;
+                }, { total: 0, done: 0, pending: 0, rev: 0, cash: 0, dB: 0, dC: 0 });
             }, [orders, timeFilter, custFilter]);
-
-            const stats = useMemo(() => filteredOrders.reduce((acc, o) => {
-                acc.total++;
-                if (o.isCompleted) {
-                    acc.done++; acc.rev += o.totalAmount; acc.cash += o.collectedCash; 
-                    acc.dB += o.debtBins; acc.dC += o.debtCash;
-                } else acc.pending++;
-                return acc;
-            }, { total: 0, done: 0, pending: 0, rev: 0, cash: 0, dB: 0, dC: 0 }), [filteredOrders]);
 
             return (
                 <div className="min-h-screen pb-48">
@@ -121,57 +158,56 @@
                         </div>
                     )}
 
-                    {/* QUẢN LÝ KHÁCH HÀNG */}
+                    {/* MODULE KHÁCH HÀNG */}
                     {view === 'customers' && (
                         <div className="max-w-6xl mx-auto px-6 py-12 fade-up">
-                            <h1 className="text-5xl font-black italic mb-12 gold-text uppercase chinese-title">/ Hồ sơ khách hàng</h1>
+                            <h1 className="text-5xl font-black italic mb-10 gold-text uppercase chinese-title">/ Hồ sơ khách hàng</h1>
                             <div className="luxury-panel p-8 mb-10">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                                     <input className="input-pro uppercase" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="TÊN KHÁCH..." />
-                                    <input className="input-pro" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="SĐT..." />
-                                    <input className="input-pro" value={form.note} onChange={e => setForm({...form, note: e.target.value})} placeholder="GHI CHÚ..." />
+                                    <input className="input-pro" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="SỐ ĐIỆN THOẠI..." />
+                                    <input className="input-pro" value={form.note} onChange={e => setForm({...form, note: e.target.value})} placeholder="ĐỊA CHỈ..." />
                                 </div>
-                                <button onClick={handleSaveCustomer} className="h-16 w-full bg-[#d4af37] text-black font-black text-xl uppercase rounded-lg">LƯU HỒ SƠ +</button>
+                                <button onClick={saveCustomer} className="h-16 w-full bg-[#d4af37] text-black font-black text-xl uppercase rounded-lg shadow-xl">Lưu hồ sơ khách hàng +</button>
                             </div>
                             {customers.map(c => (
                                 <div key={c.id} className="luxury-panel p-6 flex justify-between items-center mb-4">
                                     <div><p className="text-3xl font-black gold-text uppercase chinese-title">{c.name}</p><p className="opacity-40">{c.phone}</p></div>
-                                    <div className="flex gap-4">
-                                        <button onClick={() => {setForm(c); window.scrollTo(0,0)}} className="text-[#d4af37] font-black border-b border-[#d4af37] text-xs uppercase">SỬA</button>
-                                        <button onClick={() => setCustomers(customers.filter(i => i.id !== c.id))} className="text-red-700 font-black text-xs uppercase">XÓA</button>
+                                    <div className="flex gap-6">
+                                        <button onClick={() => {setForm(c); window.scrollTo(0,0)}} className="text-[#d4af37] font-black border-b border-[#d4af37] text-xs uppercase">Sửa</button>
+                                        <button onClick={() => db.collection("customers").doc(c.id).delete()} className="text-red-700 font-black text-xs uppercase">Xóa</button>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     )}
 
-                    {/* ĐƠN HÀNG */}
+                    {/* MODULE ĐƠN HÀNG */}
                     {view === 'orders' && (
                         <div className="max-w-6xl mx-auto px-6 py-12 fade-up">
-                            <h1 className="text-5xl font-black italic mb-12 gold-text uppercase chinese-title">/ Quản lý đơn hàng</h1>
+                            <h1 className="text-5xl font-black italic mb-10 gold-text uppercase chinese-title">/ Quản lý đơn hàng</h1>
                             <div className="luxury-panel p-8 mb-10 text-black">
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                                     <select className="input-pro !h-16" value={orderForm.customerId} onChange={e => setOrderForm({...orderForm, customerId: e.target.value})}>
                                         <option value="">--- CHỌN KHÁCH HÀNG ---</option>
-                                        {customers.map(c => <option key={c.id} value={c.id.toString()}>{c.name}</option>)}
+                                        {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                     </select>
                                     <div className="grid grid-cols-2 gap-4">
                                         <input className="input-pro text-center" type="number" placeholder="BÌNH" value={orderForm.qtyBinh} onChange={e => setOrderForm({...orderForm, qtyBinh: e.target.value})} />
                                         <input className="input-pro text-center" type="number" placeholder="LỐC" value={orderForm.qtyLoc} onChange={e => setOrderForm({...orderForm, qtyLoc: e.target.value})} />
                                     </div>
                                 </div>
-                                <button onClick={handleAddOrder} className="h-20 w-full bg-[#d4af37] text-black font-black text-2xl uppercase rounded-xl">XÁC NHẬN ĐƠN HÀNG +</button>
+                                <button onClick={addOrder} className="h-20 w-full bg-[#d4af37] text-black font-black text-2xl uppercase rounded-xl">Xác nhận đơn hàng +</button>
                             </div>
-                            <p className="text-white/20 font-black uppercase text-xs tracking-[0.3em] mb-6">Theo dõi đơn hàng</p>
                             {orders.map(o => (
                                 <div key={o.id} className="luxury-panel p-6 flex flex-col md:flex-row justify-between items-center bg-white/5 gap-6 mb-4">
                                     <div className="flex-1">
-                                        <h3 className="text-3xl font-black gold-text uppercase chinese-title mb-1">{o.customerName}</h3>
-                                        <p className="text-sm italic opacity-40 mb-2">{o.date} | GIAO: {o.qtyBinh}B-{o.qtyLoc}L | {o.totalAmount.toLocaleString()}đ</p>
+                                        <h3 className="text-3xl font-black gold-text uppercase chinese-title">{o.customerName}</h3>
+                                        <p className="text-sm italic opacity-40">{o.date} | {o.qtyBinh}B-{o.qtyLoc}L | {o.totalAmount.toLocaleString()}đ</p>
                                         {o.isCompleted && (
-                                            <div className="text-xs font-black uppercase italic space-y-1">
-                                                <p className={o.debtBins > 0 ? 'text-red-500' : 'text-green-400'}>✓ Đã thu {o.returnBins} vỏ - Nợ {o.debtBins} vỏ</p>
-                                                <p className={o.debtCash > 0 ? 'text-red-500' : 'text-green-400'}>$ Đã thu {o.collectedCash.toLocaleString()}đ - Nợ {o.debtCash.toLocaleString()}đ</p>
+                                            <div className="text-xs font-black uppercase italic mt-2">
+                                                <p className={o.debtBins > 0 ? 'text-red-500' : 'text-green-400'}>✓ Thu {o.returnBins} vỏ - Nợ {o.debtBins} vỏ</p>
+                                                <p className={o.debtCash > 0 ? 'text-red-500' : 'text-green-400'}>$ Thu {o.collectedCash.toLocaleString()}đ - Nợ {o.debtCash.toLocaleString()}đ</p>
                                             </div>
                                         )}
                                     </div>
@@ -179,7 +215,7 @@
                                         <div className="flex gap-2">
                                             <input className="input-pro !h-12 !w-20 text-center" type="number" placeholder="Vỏ" onChange={e => setTempReturn({...tempReturn, [o.id]: e.target.value})} />
                                             <input className="input-pro !h-12 !w-28 text-center" type="number" placeholder="Tiền" onChange={e => setTempCash({...tempCash, [o.id]: e.target.value})} />
-                                            <button onClick={() => confirmDelivery(o.id)} className="bg-red-600/20 text-red-500 border border-red-500/40 px-6 rounded-xl font-black text-[10px] uppercase whitespace-nowrap">Xác nhận giao hàng</button>
+                                            <button onClick={() => confirmDelivery(o.id)} className="bg-red-600/20 text-red-500 border border-red-500/40 px-6 rounded-xl font-black text-[10px] uppercase">Xác nhận giao hàng</button>
                                         </div>
                                     ) : <div className="text-green-400 font-black uppercase text-xs">Thành công ✓</div>}
                                 </div>
@@ -187,34 +223,34 @@
                         </div>
                     )}
 
-                    {/* BÁO CÁO THÔNG MINH */}
+                    {/* MODULE BÁO CÁO */}
                     {view === 'reports' && (
                         <div className="max-w-7xl mx-auto px-6 py-12 fade-up">
-                            <h1 className="text-6xl font-black italic mb-12 gold-text uppercase chinese-title">/ Báo cáo tổng kết</h1>
+                            <h1 className="text-6xl font-black italic mb-10 gold-text uppercase chinese-title">/ Báo cáo kinh doanh</h1>
                             <div className="luxury-panel p-6 mb-10 grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label className="text-[10px] font-black uppercase text-[#d4af37] mb-2 block">Lọc Thời gian</label>
+                                    <label className="text-[10px] font-black uppercase text-[#d4af37] mb-2 block">Lọc theo Thời gian</label>
                                     <div className="flex gap-2">
                                         {['all', 'day', 'month', 'year'].map(t => (
-                                            <button key={t} onClick={() => setTimeFilter(t)} className={`flex-1 py-2 rounded font-black text-[10px] border ${timeFilter === t ? 'bg-[#d4af37] text-black' : 'border-white/10'}`}>
+                                            <button key={t} onClick={() => setTimeFilter(t)} className={`flex-1 py-2 rounded font-black text-[10px] border ${timeFilter === t ? 'bg-[#d4af37] text-black border-[#d4af37]' : 'border-white/10'}`}>
                                                 {t === 'all' ? 'Tất cả' : t === 'day' ? 'Ngày' : t === 'month' ? 'Tháng' : 'Năm'}
                                             </button>
                                         ))}
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="text-[10px] font-black uppercase text-[#d4af37] mb-2 block">Lọc Khách hàng</label>
+                                    <label className="text-[10px] font-black uppercase text-[#d4af37] mb-2 block">Lọc theo Khách hàng</label>
                                     <select className="input-pro text-black !h-10" value={custFilter} onChange={e => setCustFilter(e.target.value)}>
                                         <option value="all">TẤT CẢ KHÁCH HÀNG</option>
-                                        {customers.map(c => <option key={c.id} value={c.id.toString()}>{c.name}</option>)}
+                                        {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                                     </select>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                                <div className="luxury-panel p-10"><p className="opacity-40 uppercase mb-4">Doanh thu đơn</p><p className="text-6xl font-black gold-text">{stats.rev.toLocaleString()}đ</p></div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                <div className="luxury-panel p-10"><p className="opacity-40 uppercase mb-4">Doanh thu dự kiến</p><p className="text-6xl font-black gold-text">{stats.rev.toLocaleString()}đ</p></div>
                                 <div className="luxury-panel p-10 border-l-green-500"><p className="opacity-40 uppercase mb-4">Thực thu tiền mặt</p><p className="text-6xl font-black text-green-400">{stats.cash.toLocaleString()}đ</p></div>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="luxury-panel p-10 border-l-red-500"><p className="opacity-40 uppercase mb-4">Tổng nợ tiền</p><p className="text-6xl font-black text-red-500">{stats.dC.toLocaleString()}đ</p></div>
                                 <div className="luxury-panel p-10 border-l-red-500"><p className="opacity-40 uppercase mb-4">Tổng nợ vỏ</p><p className="text-6xl font-black text-red-500">{stats.dB} Vỏ</p></div>
                             </div>
