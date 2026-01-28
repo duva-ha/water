@@ -1,39 +1,64 @@
-<script type="text/babel" data-type="module">
-    // Quan trọng: Sử dụng lệnh import bên trong script type="text/babel"
-    // để Babel Standalone có thể biên dịch JSX trong các file rời.
-    import { CustomerModule } from "./src/modules/CustomerModule.js";
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giviso Water - Fixed</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+    <div id="root"></div>
 
-    const { useState } = React;
+    <script type="text/babel" data-type="module">
+        // 1. Nhập CustomerModule từ file bạn đã tách
+        import { CustomerModule } from "./src/modules/CustomerModule.js";
 
-    const App = () => {
-        const [view, setView] = useState('menu');
-        return (
-            <div className="min-h-screen bg-[#fdfdfd]">
-                {view === 'menu' ? (
-                    <div className="p-10 max-w-4xl mx-auto fade-in">
-                        <h1 className="text-7xl font-black italic mb-10 tracking-tighter">GIVISO OS</h1>
-                        <div 
-                            onClick={() => setView('customers')}
-                            className="bg-[#ccff00] border-[5px] border-black p-10 rounded-[2.5rem] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] cursor-pointer active:scale-95 transition-all"
-                        >
-                            <h2 className="text-5xl font-black uppercase italic">Khách Hàng</h2>
-                        </div>
+        const { useState } = React;
+
+        // 2. Giao diện Menu chính (Viết trực tiếp ở đây để đảm bảo nó hiện lên trước)
+        const MainMenu = ({ setView }) => (
+            <div className="p-8 max-w-4xl mx-auto">
+                <h1 className="text-7xl font-black italic mb-10 tracking-tighter uppercase">Giviso OS</h1>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div 
+                        onClick={() => setView('customers')}
+                        className="bg-[#ccff00] border-[5px] border-black p-10 rounded-[2.5rem] shadow-[10px_10px_0px_0px_rgba(0,0,0,1)] cursor-pointer active:scale-95 transition-all"
+                    >
+                        <h2 className="text-4xl font-black uppercase italic">Khách Hàng</h2>
                     </div>
-                ) : (
-                    <div className="fade-in">
-                        <CustomerModule />
-                        <button 
-                            onClick={() => setView('menu')}
-                            className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black text-[#ccff00] px-12 py-5 rounded-full font-black uppercase text-xl border-4 border-black z-50 shadow-2xl active:scale-90 transition-all"
-                        >
-                            ⬅ Trở Lại
-                        </button>
-                    </div>
-                )}
+                    {/* Thêm các ô Đơn hàng, Công nợ ở đây sau */}
+                </div>
             </div>
         );
-    };
 
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
-</script>
+        // 3. App chính điều phối
+        const App = () => {
+            const [view, setView] = useState('menu');
+
+            return (
+                <div className="min-h-screen bg-[#fdfdfd]">
+                    {view === 'menu' && <MainMenu setView={setView} />}
+                    {view === 'customers' && (
+                        <div>
+                            <CustomerModule />
+                            <button 
+                                onClick={() => setView('menu')}
+                                className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black text-[#ccff00] px-12 py-5 rounded-full font-black uppercase border-4 border-black z-50 shadow-2xl"
+                            >
+                                ⬅ Quay Lại
+                            </button>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        // 4. Kích hoạt React (Đảm bảo dòng này nằm cuối cùng)
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
