@@ -9,35 +9,40 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Space Grotesk', sans-serif; background: #fdfdfd; }
+        .fade-in { animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 <body>
     <div id="root"></div>
 
-    <script type="text/babel" data-type="module" data-presets="react">
-        // Phải ghi rõ đường dẫn đầy đủ và có đuôi .js
+    <script type="text/babel" data-type="module">
         import { CustomerModule } from "./src/modules/CustomerModule.js";
 
         const { useState } = React;
 
         const MainMenu = ({ setView }) => (
-            <div className="p-10 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto">
-                <div onClick={() => setView('customers')} className="border-4 border-black p-10 rounded-[2rem] bg-[#ccff00] cursor-pointer shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-all">
+            <div className="p-6 md:p-12 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-6xl mx-auto fade-in">
+                <div onClick={() => setView('customers')} className="border-4 border-black p-10 rounded-[2.5rem] bg-[#ccff00] cursor-pointer shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] active:scale-95 transition-all">
                     <h2 className="text-4xl font-black uppercase italic">Khách Hàng</h2>
                 </div>
-                {/* Các ô khác tương tự... */}
+                {/* Bạn có thể thêm các nút khác ở đây */}
             </div>
         );
 
         const App = () => {
             const [view, setView] = useState('menu');
+
             return (
-                <div className="min-h-screen bg-[#fdfdfd]">
+                <div className="min-h-screen">
                     {view === 'menu' && <MainMenu setView={setView} />}
                     {view === 'customers' && <CustomerModule />}
                     
                     {view !== 'menu' && (
-                        <button onClick={() => setView('menu')} className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black text-white font-black px-10 py-4 rounded-full z-50">
-                            ⬅ TRỞ LẠI MENU
+                        <button onClick={() => setView('menu')} className="fixed bottom-8 left-1/2 -translate-x-1/2 bg-black text-white font-black px-12 py-5 rounded-full border-4 border-black z-50 text-xl shadow-xl active:scale-90 transition-all uppercase">
+                            ⬅ Trở Lại Menu
                         </button>
                     )}
                 </div>
