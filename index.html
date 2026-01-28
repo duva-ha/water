@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÚ VINH OS | HỒ SƠ KHÁCH HÀNG</title>
+    <title>PHÚ VINH OS | CLASSIC LUXURY</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -24,11 +24,23 @@
             background: linear-gradient(180deg, #fde68a 0%, #d4af37 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        /* Ô nhập liệu chuyên nghiệp: Nền trắng, Chữ đen */
         .input-professional {
             @apply bg-white text-black font-bold h-16 px-6 rounded-xl border-none outline-none focus:ring-4 focus:ring-[#d4af37] transition-all text-xl placeholder-zinc-400;
         }
-        .nav-capsule { background: rgba(10, 10, 10, 0.9); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 999px; }
+        /* Thanh điều hướng 4 nút chuyên nghiệp */
+        .nav-capsule { 
+            background: rgba(10, 10, 10, 0.95); 
+            border: 1px solid rgba(212, 175, 55, 0.3); 
+            border-radius: 999px; 
+            padding: 6px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        }
+        .nav-btn {
+            @apply px-5 md:px-8 py-3 rounded-full font-black text-[10px] md:text-xs uppercase tracking-widest transition-all duration-300;
+        }
+        .nav-active { @apply bg-[#d4af37] text-black shadow-[0_0_20px_rgba(212,175,55,0.4)]; }
+        .nav-inactive { @apply text-white/40 hover:text-white; }
+        
         .fade-up { animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1); }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     </style>
@@ -40,7 +52,7 @@
         const { useState } = React;
 
         const App = () => {
-            const [view, setView] = useState('customers'); // Mặc định vào khách hàng theo yêu cầu
+            const [view, setView] = useState('menu');
             const [customers, setCustomers] = useState([
                 { id: 1, name: "NGUYỄN PHÚ VINH", phone: "0901.888.999", note: "Quận 1, TP.HCM" }
             ]);
@@ -56,76 +68,29 @@
                 setForm({ id: null, name: '', phone: '', note: '' });
             };
 
-            const handleEdit = (c) => {
-                setForm(c);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            };
-
             const CustomerModule = () => (
                 <div className="fade-up max-w-7xl mx-auto px-6 py-12">
-                    <h1 className="text-6xl md:text-8xl font-black italic mb-16 chinese-title gold-text uppercase tracking-tighter">
-                        / Hồ sơ khách hàng
-                    </h1>
-
-                    {/* KHU VỰC NHẬP LIỆU CHUYÊN NGHIỆP (BENTO BOX) */}
-                    <div className="luxury-panel p-8 md:p-12 mb-20 border-gold/30 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-10 text-6xl chinese-title">富榮</div>
-                        
+                    <h1 className="text-6xl md:text-8xl font-black italic mb-16 chinese-title gold-text uppercase tracking-tighter">/ Hồ sơ khách hàng</h1>
+                    <div className="luxury-panel p-8 md:p-12 mb-20">
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                            <div className="flex flex-col gap-2">
-                                <label className="text-xs font-black uppercase tracking-widest text-[#d4af37] ml-2">Danh tánh</label>
-                                <input 
-                                    className="input-professional uppercase" 
-                                    placeholder="Họ tên khách..." 
-                                    value={form.name} 
-                                    onChange={e => setForm({...form, name: e.target.value})} 
-                                />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <label className="text-xs font-black uppercase tracking-widest text-[#d4af37] ml-2">Liên lạc</label>
-                                <input 
-                                    className="input-professional" 
-                                    placeholder="Số điện thoại..." 
-                                    type="tel"
-                                    value={form.phone} 
-                                    onChange={e => setForm({...form, phone: e.target.value})} 
-                                />
-                            </div>
-                            <div className="flex flex-col gap-2">
-                                <label className="text-xs font-black uppercase tracking-widest text-[#d4af37] ml-2">Ghi chú</label>
-                                <input 
-                                    className="input-professional" 
-                                    placeholder="Địa chỉ, chỉ dẫn..." 
-                                    value={form.note} 
-                                    onChange={e => setForm({...form, note: e.target.value})} 
-                                />
-                            </div>
+                            <input className="input-professional uppercase" placeholder="Họ tên..." value={form.name} onChange={e => setForm({...form, name: e.target.value})} />
+                            <input className="input-professional" placeholder="SĐT..." type="tel" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} />
+                            <input className="input-professional" placeholder="Ghi chú địa chỉ..." value={form.note} onChange={e => setForm({...form, note: e.target.value})} />
                         </div>
-                        
-                        <button 
-                            onClick={handleSave} 
-                            className="h-20 w-full bg-[#d4af37] text-black font-black text-3xl uppercase tracking-[0.2em] hover:bg-[#fde68a] transition-all shadow-2xl rounded-xl"
-                        >
-                            {form.id ? "CẬP NHẬT DỮ LIỆU" : "XÁC NHẬN LƯU TRỮ +"}
+                        <button onClick={handleSave} className="h-20 w-full bg-[#d4af37] text-black font-black text-2xl uppercase tracking-[0.2em] rounded-xl shadow-2xl transition-all active:scale-95">
+                            {form.id ? "Cập Nhật" : "Xác Nhận Lưu Trữ +"}
                         </button>
                     </div>
-
-                    {/* DANH SÁCH KHÁCH HÀNG */}
-                    <div className="space-y-6">
-                        <p className="text-xs font-black uppercase tracking-[0.5em] text-white/20 mb-8 border-b border-white/10 pb-4">Danh sách đối tác hiện hành</p>
+                    <div className="space-y-4">
                         {customers.map(c => (
-                            <div key={c.id} className="luxury-panel p-8 flex flex-col md:flex-row justify-between items-center gap-6 group hover:bg-white/5">
+                            <div key={c.id} className="luxury-panel p-6 flex justify-between items-center group">
                                 <div className="flex-1">
-                                    <h3 className="text-4xl font-black chinese-title uppercase leading-none mb-3 gold-text">{c.name}</h3>
-                                    <div className="flex gap-6 text-zinc-500 font-bold text-lg italic">
-                                        <span>{c.phone}</span>
-                                        <span className="opacity-20">|</span>
-                                        <span>{c.note || "Chưa có ghi chú"}</span>
-                                    </div>
+                                    <h3 className="text-3xl font-black chinese-title uppercase gold-text leading-none mb-2">{c.name}</h3>
+                                    <p className="text-zinc-500 font-bold italic">{c.phone} | {c.note}</p>
                                 </div>
                                 <div className="flex gap-4">
-                                    <button onClick={() => handleEdit(c)} className="text-[#d4af37] font-black uppercase tracking-widest text-sm border-b-2 border-[#d4af37]">Sửa</button>
-                                    <button onClick={() => setCustomers(customers.filter(i => i.id !== c.id))} className="text-red-700 font-black uppercase tracking-widest text-sm">Xóa</button>
+                                    <button onClick={() => {setForm(c); window.scrollTo({top:0, behavior:'smooth'})}} className="text-[#d4af37] font-black text-xs border-b border-[#d4af37]">Sửa</button>
+                                    <button onClick={() => setCustomers(customers.filter(i => i.id !== c.id))} className="text-red-700 font-black text-xs">Xóa</button>
                                 </div>
                             </div>
                         ))}
@@ -136,11 +101,11 @@
             const MainMenu = () => (
                 <div className="fade-up max-w-7xl mx-auto px-8 py-24">
                     <h1 className="text-8xl md:text-[10rem] font-black chinese-title gold-text leading-none uppercase mb-20">PHÚ VINH<br/><span className="text-white/5 italic">CLASSIC</span></h1>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        {['customers', 'orders', 'debts'].map((viewName) => (
-                            <div key={viewName} onClick={() => setView(viewName)} className="luxury-panel p-12 cursor-pointer group">
-                                <h2 className="text-5xl font-black chinese-title uppercase group-hover:gold-text transition-all">
-                                    {viewName === 'customers' ? 'Khách hàng' : viewName === 'orders' ? 'Đơn hàng' : 'Công nợ'}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {['customers', 'orders', 'debts', 'reports'].map((v) => (
+                            <div key={v} onClick={() => setView(v)} className="luxury-panel p-10 cursor-pointer group">
+                                <h2 className="text-4xl font-black chinese-title uppercase group-hover:gold-text transition-all">
+                                    {v === 'customers' ? 'Khách hàng' : v === 'orders' ? 'Đơn hàng' : v === 'debts' ? 'Công nợ' : 'Báo cáo'}
                                 </h2>
                             </div>
                         ))}
@@ -149,14 +114,25 @@
             );
 
             return (
-                <div className="min-h-screen pb-40">
+                <div className="min-h-screen pb-48">
                     {view === 'menu' && <MainMenu />}
                     {view === 'customers' && <CustomerModule />}
+                    {['orders', 'debts', 'reports'].includes(view) && (
+                        <div className="fade-up max-w-7xl mx-auto px-6 py-24 text-center">
+                            <h1 className="text-5xl font-black opacity-20 uppercase chinese-title">Dữ liệu {view} đang cập nhật...</h1>
+                        </div>
+                    )}
                     
-                    <nav className="fixed bottom-10 left-1/2 -translate-x-1/2 nav-capsule p-2 flex gap-2 z-50 shadow-2xl">
-                        <button onClick={() => setView('menu')} className={`px-10 py-4 rounded-full font-black text-xs uppercase tracking-widest transition-all ${view === 'menu' ? 'bg-[#d4af37] text-black' : 'text-white/40'}`}>Hệ Thống</button>
-                        <button onClick={() => setView('customers')} className={`px-10 py-4 rounded-full font-black text-xs uppercase tracking-widest transition-all ${view === 'customers' ? 'bg-[#d4af37] text-black' : 'text-white/40'}`}>Đối Tác</button>
-                    </nav>
+                    {/* THANH ĐIỀU HƯỚNG 4 NỘI DUNG + DASHBOARD */}
+                    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[95%] max-w-3xl z-50">
+                        <nav className="nav-capsule flex justify-around items-center">
+                            <button onClick={() => setView('menu')} className={`nav-btn ${view === 'menu' ? 'nav-active' : 'nav-inactive'}`}>Tổng quát</button>
+                            <button onClick={() => setView('customers')} className={`nav-btn ${view === 'customers' ? 'nav-active' : 'nav-inactive'}`}>Khách</button>
+                            <button onClick={() => setView('orders')} className={`nav-btn ${view === 'orders' ? 'nav-active' : 'nav-inactive'}`}>Đơn</button>
+                            <button onClick={() => setView('debts')} className={`nav-btn ${view === 'debts' ? 'nav-active' : 'nav-inactive'}`}>Nợ</button>
+                            <button onClick={() => setView('reports')} className={`nav-btn ${view === 'reports' ? 'nav-active' : 'nav-inactive'}`}>Báo Cáo</button>
+                        </nav>
+                    </div>
                 </div>
             );
         };
