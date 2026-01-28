@@ -14,14 +14,9 @@
     <style>
         :root { --gold: #d4af37; }
         body { font-family: 'Inter', sans-serif; background-color: #050505; color: #fef3c7; overflow-x: hidden; }
-        .chinese-title { font-family: 'Noto Serif SC', serif; }
         .input-pro { background-color: #ffffff !important; color: #000000 !important; font-weight: 900 !important; height: 50px; padding: 0 15px; border-radius: 8px; width: 100%; border: none; outline: none; }
         .luxury-panel { background: linear-gradient(145deg, rgba(153, 27, 27, 0.05), rgba(0, 0, 0, 0.6)); border: 1px solid rgba(212, 175, 55, 0.2); border-left: 5px solid var(--gold); backdrop-filter: blur(10px); }
-        .gold-text { background: linear-gradient(180deg, #fde68a 0%, #d4af37 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .nav-capsule { background: rgba(10, 10, 10, 0.95); border: 1px solid rgba(212, 175, 55, 0.3); border-radius: 999px; padding: 6px; }
         .nav-active { background-color: var(--gold); color: #000; box-shadow: 0 0 25px rgba(212, 175, 55, 0.8); transform: scale(1.05); }
-        .fade-up { animation: fadeUp 0.5s ease-out; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -30,7 +25,7 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // --- CẤU HÌNH FIREBASE CỦA BẠN ---
+        // --- DÁN CẤU HÌNH FIREBASE CỦA BẠN VÀO ĐÂY ---
         const firebaseConfig = {
           apiKey: "AIzaSyDQmerSSs0qhO01xNnFWpquZYseDThWxP0",
           authDomain: "lichtruc-e3f82.firebaseapp.com",
@@ -41,74 +36,81 @@
           measurementId: "G-QYQCZCLWR4"
         };
 
-        // Khởi tạo Firebase
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // --- APP CHÍNH ---
         const App = () => {
             const [view, setView] = useState('menu');
             const [customers, setCustomers] = useState([]);
             const [orders, setOrders] = useState([]);
             const [loading, setLoading] = useState(true);
-            const [customerForm, setCustomerForm] = useState({ id: null, name: '', phone: '', note: '' });
+            const [form, setForm] = useState({ id: null, name: '', phone: '', note: '' });
 
-            // Đọc dữ liệu từ Firebase khi mở App
             useEffect(() => {
-                const unsubCustomers = db.collection("customers").onSnapshot(snap => {
-                    setCustomers(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-                });
-                const unsubOrders = db.collection("orders").orderBy("timestamp", "desc").onSnapshot(snap => {
-                    setOrders(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+                const unsubCust = db.collection("customers").onSnapshot(s => setCustomers(s.docs.map(d => ({id: d.id, ...d.data()}))));
+                const unsubOrd = db.collection("orders").orderBy("timestamp", "desc").onSnapshot(s => {
+                    setOrders(s.docs.map(d => ({id: d.id, ...d.data()})));
                     setLoading(false);
                 });
-                return () => { unsubCustomers(); unsubOrders(); };
+                return () => { unsubCust(); unsubOrd(); };
             }, []);
 
-            // --- CÁC HÀM XỬ LÝ DỮ LIỆU ---
-            const handleSaveCustomer = async () => {
-                if (!customerForm.name || !customerForm.phone) return alert("THIẾU THÔNG TIN!");
-                const data = { ...customerForm, name: customerForm.name.toUpperCase() };
-                if (customerForm.id) {
-                    await db.collection("customers").doc(customerForm.id).update(data);
-                } else {
-                    delete data.id;
-                    await db.collection("customers").add(data);
-                }
-                setCustomerForm({ id: null, name: '', phone: '', note: '' });
-                alert("Đã lưu khách hàng!");
-            };
+            if (loading && firebaseConfig.apiKey === "AIzaSy...") return (
+                <div className="h-screen flex flex-col items-center justify-center p-10 text-center">
+                    <h1 className="text-red-500 text-2xl font-black mb-4 uppercase">Chưa cấu hình Firebase</h1>
+                    <p className="opacity-50">Hãy dán apiKey và projectId vào code để bắt đầu.</p>
+                </div>
+            );
 
-            const handleAddOrder = async (orderData) => {
-                await db.collection("orders").add({
-                    ...orderData,
-                    timestamp: new Date().toISOString(),
-                    isCompleted: false
-                });
-                alert("Đã tạo đơn hàng!");
-            };
+            // --- MODULES ---
+            const CustomerModule = () => (
+                <div className="max-w-7xl mx-auto px-6 py-12 pb-40">
+                    <h1 className="text-5xl font-black italic mb-10 gold-text uppercase" style={{fontFamily: "'Noto Serif SC', serif"}}>/ Hồ sơ khách hàng</h1>
+                    <div className="luxury-panel p-8 mb-10">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                            <input className="input-pro uppercase" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="TÊN KHÁCH..." />
+                            <input className="input-pro" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="SĐT..." />
+                            <input className="input-pro" value={form.note} onChange={e => setForm({...form, note: e.target.value})} placeholder="ĐỊA CHỈ..." />
+                        </div>
+                        <button onClick={async () => {
+                            const data = {...form, name: form.name.toUpperCase()};
+                            if (form.id) await db.collection("customers").doc(form.id).update(data);
+                            else await db.collection("customers").add(data);
+                            setForm({id:null, name:'', phone:'', note:''});
+                        }} className="h-16 w-full bg-[#d4af37] text-black font-black text-xl uppercase rounded-lg">Lưu hồ sơ +</button>
+                    </div>
+                    {customers.map(c => (
+                        <div key={c.id} className="luxury-panel p-6 mb-4 flex justify-between items-center">
+                            <div><p className="text-2xl font-black gold-text uppercase">{c.name}</p><p className="opacity-30 italic text-sm">{c.phone}</p></div>
+                            <button onClick={() => {setForm(c); window.scrollTo(0,0)}} className="text-[#d4af37] font-black border-b border-[#d4af37] text-xs uppercase">Sửa</button>
+                        </div>
+                    ))}
+                </div>
+            );
 
-            const handleConfirmOrder = async (id, returnBins, collectedCash) => {
-                const order = orders.find(o => o.id === id);
-                await db.collection("orders").doc(id).update({
-                    isCompleted: true,
-                    returnBins: parseInt(returnBins),
-                    debtBins: order.qtyBinh - parseInt(returnBins),
-                    collectedCash: parseInt(collectedCash),
-                    debtCash: order.totalAmount - parseInt(collectedCash)
-                });
-            };
-
-            if (loading) return <div className="h-screen flex items-center justify-center gold-text chinese-title text-4xl animate-pulse">ĐANG KẾT NỐI...</div>;
-
-            // Render giao diện (Giữ nguyên toàn bộ các Module như đã thống nhất)
-            // ... (Tiếp tục phần render view đã viết ở các phiên bản trước) ...
-            
             return (
-                <div className="min-h-screen pb-48">
-                    {/* Dựa trên biến view, hiển thị Module tương ứng và truyền các hàm Firebase vào */}
+                <div className="min-h-screen">
+                    {view === 'menu' && (
+                        <div className="max-w-7xl mx-auto px-8 py-20">
+                            <h1 className="text-7xl md:text-[9rem] font-black gold-text uppercase leading-none mb-20 text-center" style={{fontFamily: "'Noto Serif SC', serif"}}>PHÚ VINH<br/><span className="text-white/5 italic">CLASSIC</span></h1>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center font-black text-4xl">
+                                {['customers', 'orders', 'debts', 'reports'].map(v => (
+                                    <div key={v} onClick={() => setView(v)} className="luxury-panel p-10 cursor-pointer hover:gold-text uppercase">{v}</div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                    {view === 'customers' && <CustomerModule />}
+                    
+                    <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[95%] max-w-4xl z-50">
+                        <nav className="bg-[#0a0a0a]/95 border border-gold/30 rounded-full p-2 flex justify-around">
+                            {['menu', 'customers', 'orders', 'debts', 'reports'].map(v => (
+                                <button key={v} onClick={() => setView(v)} className={`px-4 py-3 rounded-full font-black text-[10px] md:text-xs uppercase transition-all ${view === v ? 'nav-active' : 'text-white/30'}`}>
+                                    {v === 'menu' ? 'T.Quát' : v}
+                                </button>
+                            ))}
+                        </nav>
+                    </div>
                 </div>
             );
         };
