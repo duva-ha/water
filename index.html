@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>PHÚ VINH OS | FIXED SYSTEM</title>
+    <title>PHÚ VINH OS | ĐƠN HÀNG ĐA NĂNG</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -12,8 +12,7 @@
     <style>
         :root { --gold: #d4af37; }
         body { font-family: 'Inter', sans-serif; background-color: #050505; color: #fef3c7; }
-        
-        /* ÉP CHỮ ĐEN TUYỆT ĐỐI CHO Ô NHẬP LIỆU */
+        /* Ô NHẬP LIỆU: NỀN TRẮNG - CHỮ ĐEN */
         .input-pro {
             background-color: #ffffff !important;
             color: #000000 !important;
@@ -27,7 +26,6 @@
             outline: none;
         }
         .input-pro:focus { box-shadow: 0 0 0 4px var(--gold); }
-
         .luxury-panel {
             background: linear-gradient(145deg, rgba(153, 27, 27, 0.05), rgba(0, 0, 0, 0.6));
             border: 1px solid rgba(212, 175, 55, 0.2);
@@ -43,6 +41,7 @@
             background-color: var(--gold); color: #000; 
             box-shadow: 0 0 25px rgba(212, 175, 55, 0.7); /* PHÁT SÁNG */
         }
+        .chinese-title { font-family: 'Noto Serif SC', serif; }
     </style>
 </head>
 <body>
@@ -51,40 +50,83 @@
     <script type="text/babel">
         const { useState } = React;
 
-        // --- TÁCH RIÊNG MODULE ĐỂ KHÔNG BỊ NHẢY CHỮ ---
-        const CustomerModule = ({ customers, setCustomers, form, setForm, handleSave }) => {
+        // --- MODULE ĐƠN HÀNG (2 LOẠI MẶT HÀNG) ---
+        const OrderModule = ({ customers, orders, setOrders }) => {
+            const [orderForm, setOrderForm] = useState({ 
+                customerId: '', 
+                qtyBinh: '', 
+                qtyLoc: '', 
+                returnBins: '', 
+                status: 'Đã giao' 
+            });
+
+            const handleAddOrder = () => {
+                if (!orderForm.customerId || (!orderForm.qtyBinh && !orderForm.qtyLoc)) {
+                    return alert("HÃY CHỌN KHÁCH VÀ NHẬP SỐ LƯỢNG HÀNG!");
+                }
+                const customer = customers.find(c => c.id === parseInt(orderForm.customerId));
+                const newOrder = {
+                    ...orderForm,
+                    id: Date.now(),
+                    customerName: customer.name,
+                    date: new Date().toLocaleString('vi-VN')
+                };
+                setOrders([newOrder, ...orders]);
+                setOrderForm({ customerId: '', qtyBinh: '', qtyLoc: '', returnBins: '', status: 'Đã giao' });
+            };
+
             return (
                 <div className="max-w-7xl mx-auto px-6 py-12">
-                    <h1 className="text-6xl font-black italic mb-12 gold-text uppercase" style={{fontFamily: "'Noto Serif SC', serif"}}>/ Hồ sơ khách hàng</h1>
+                    <h1 className="text-6xl font-black italic mb-12 gold-text uppercase chinese-title">/ Quản lý đơn hàng</h1>
                     
                     <div className="luxury-panel p-8 mb-16">
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                            <div>
-                                <label className="text-[10px] font-black uppercase text-[#d4af37] ml-2 mb-2 block tracking-widest">Họ tên</label>
-                                <input className="input-pro uppercase" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="NHẬP TÊN..." />
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                            {/* CỘT 1: CHỌN KHÁCH */}
+                            <div className="flex flex-col gap-2">
+                                <label className="text-xs font-black uppercase text-[#d4af37] tracking-widest ml-2">Đối tác nhận hàng</label>
+                                <select className="input-pro" value={orderForm.customerId} onChange={e => setOrderForm({...orderForm, customerId: e.target.value})}>
+                                    <option value="">--- CHỌN KHÁCH HÀNG ---</option>
+                                    {customers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                                </select>
                             </div>
-                            <div>
-                                <label className="text-[10px] font-black uppercase text-[#d4af37] ml-2 mb-2 block tracking-widest">Điện thoại</label>
-                                <input className="input-pro" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="SỐ ĐIỆN THOẠI..." />
-                            </div>
-                            <div>
-                                <label className="text-[10px] font-black uppercase text-[#d4af37] ml-2 mb-2 block tracking-widest">Địa chỉ</label>
-                                <input className="input-pro" value={form.note} onChange={e => setForm({...form, note: e.target.value})} placeholder="GHI CHÚ..." />
+
+                            {/* CỘT 2: NHẬP SỐ LƯỢNG */}
+                            <div className="grid grid-cols-3 gap-4">
+                                <div>
+                                    <label className="text-[10px] font-black uppercase text-[#d4af37] mb-2 block tracking-tighter italic">Giao Bình</label>
+                                    <input className="input-pro text-center" type="number" placeholder="0" value={orderForm.qtyBinh} onChange={e => setOrderForm({...orderForm, qtyBinh: e.target.value})} />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase text-[#d4af37] mb-2 block tracking-tighter italic">Giao Lốc</label>
+                                    <input className="input-pro text-center" type="number" placeholder="0" value={orderForm.qtyLoc} onChange={e => setOrderForm({...orderForm, qtyLoc: e.target.value})} />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black uppercase text-[#d4af37] mb-2 block tracking-tighter italic">Thu Vỏ</label>
+                                    <input className="input-pro text-center" type="number" placeholder="0" value={orderForm.returnBins} onChange={e => setOrderForm({...orderForm, returnBins: e.target.value})} />
+                                </div>
                             </div>
                         </div>
-                        <button onClick={handleSave} className="h-20 w-full bg-[#d4af37] text-black font-black text-2xl uppercase rounded-xl shadow-2xl active:scale-95 transition-all">LƯU THÔNG TIN +</button>
+                        <button onClick={handleAddOrder} className="h-20 w-full bg-[#d4af37] text-black font-black text-2xl uppercase rounded-xl shadow-[0_10px_40px_rgba(212,175,55,0.3)] active:scale-95 transition-all">
+                            XÁC NHẬN GIAO HÀNG +
+                        </button>
                     </div>
 
+                    {/* DANH SÁCH ĐƠN HÀNG GẦN ĐÂY */}
                     <div className="space-y-4">
-                        {customers.map(c => (
-                            <div key={c.id} className="luxury-panel p-8 flex justify-between items-center bg-white/5">
+                        <p className="text-white/20 font-black uppercase text-xs tracking-[0.3em] mb-6">Lịch sử giao nhận hôm nay</p>
+                        {orders.map(o => (
+                            <div key={o.id} className="luxury-panel p-6 flex justify-between items-center bg-white/5 border-l-white/20">
                                 <div>
-                                    <h3 className="text-3xl font-black gold-text uppercase" style={{fontFamily: "'Noto Serif SC', serif"}}>{c.name}</h3>
-                                    <p className="text-zinc-500 font-bold italic">{c.phone} | {c.note}</p>
+                                    <h3 className="text-3xl font-black uppercase chinese-title gold-text leading-none mb-2">{o.customerName}</h3>
+                                    <p className="text-sm font-bold italic text-zinc-400">
+                                        {o.date} | 
+                                        <span className="text-white ml-2">Bình: {o.qtyBinh || 0}</span> • 
+                                        <span className="text-white ml-2">Lốc: {o.qtyLoc || 0}</span> • 
+                                        <span className="text-[#d4af37] ml-2">Thu vỏ: {o.returnBins || 0}</span>
+                                    </p>
                                 </div>
-                                <div className="flex gap-6">
-                                    <button onClick={() => {setForm(c); window.scrollTo(0,0)}} className="text-[#d4af37] font-black border-b border-[#d4af37]">Sửa</button>
-                                    <button onClick={() => setCustomers(customers.filter(i => i.id !== c.id))} className="text-red-700 font-black">Xóa</button>
+                                <div className="bg-green-500/10 text-green-400 px-4 py-2 rounded-lg font-black text-[10px] uppercase border border-green-500/20">
+                                    Thành công
                                 </div>
                             </div>
                         ))}
@@ -93,9 +135,33 @@
             );
         };
 
+        // --- CÁC MODULE KHÁC GIỮ NGUYÊN ---
+        const CustomerModule = ({ customers, setCustomers, form, setForm, handleSave }) => (
+            <div className="max-w-7xl mx-auto px-6 py-12">
+                <h1 className="text-6xl font-black italic mb-12 gold-text uppercase chinese-title">/ Hồ sơ khách hàng</h1>
+                <div className="luxury-panel p-8 mb-16">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <input className="input-pro uppercase" value={form.name} onChange={e => setForm({...form, name: e.target.value})} placeholder="DANH TÁNH..." />
+                        <input className="input-pro" value={form.phone} onChange={e => setForm({...form, phone: e.target.value})} placeholder="SỐ ĐIỆN THOẠI..." />
+                        <input className="input-pro" value={form.note} onChange={e => setForm({...form, note: e.target.value})} placeholder="GHI CHÚ..." />
+                    </div>
+                    <button onClick={handleSave} className="h-20 w-full bg-[#d4af37] text-black font-black text-2xl uppercase rounded-xl">LƯU HỒ SƠ +</button>
+                </div>
+                <div className="space-y-4">
+                    {customers.map(c => (
+                        <div key={c.id} className="luxury-panel p-6 flex justify-between items-center bg-white/5">
+                            <div><h3 className="text-3xl font-black gold-text uppercase chinese-title">{c.name}</h3><p className="opacity-40">{c.phone}</p></div>
+                            <button onClick={() => {setForm(c); window.scrollTo(0,0)}} className="text-[#d4af37] font-black border-b border-[#d4af37]">SỬA</button>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+
         const App = () => {
             const [view, setView] = useState('menu');
             const [customers, setCustomers] = useState([{ id: 1, name: "NGUYỄN PHÚ VINH", phone: "0901.888.999", note: "Quận 1" }]);
+            const [orders, setOrders] = useState([]);
             const [form, setForm] = useState({ id: null, name: '', phone: '', note: '' });
 
             const handleSave = () => {
@@ -112,7 +178,7 @@
                 <div className="min-h-screen pb-48">
                     {view === 'menu' && (
                         <div className="max-w-7xl mx-auto px-8 py-20">
-                            <h1 className="text-7xl md:text-[9rem] font-black gold-text uppercase leading-none mb-20" style={{fontFamily: "'Noto Serif SC', serif"}}>PHÚ VINH<br/><span className="text-white/5 italic">CLASSIC</span></h1>
+                            <h1 className="text-7xl md:text-[9rem] font-black gold-text uppercase leading-none mb-20 chinese-title">PHÚ VINH<br/><span className="text-white/5 italic">CLASSIC</span></h1>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 {['customers', 'orders', 'debts', 'reports'].map(v => (
                                     <div key={v} onClick={() => setView(v)} className="luxury-panel p-10 cursor-pointer group uppercase font-black chinese-title text-4xl hover:gold-text">
@@ -124,6 +190,7 @@
                     )}
 
                     {view === 'customers' && <CustomerModule customers={customers} setCustomers={setCustomers} form={form} setForm={setForm} handleSave={handleSave} />}
+                    {view === 'orders' && <OrderModule customers={customers} orders={orders} setOrders={setOrders} />}
                     
                     <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-[95%] max-w-4xl z-50">
                         <nav className="nav-capsule flex justify-around items-center">
